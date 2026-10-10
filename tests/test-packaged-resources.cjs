@@ -1,0 +1,13 @@
+const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto');
+const root=path.resolve(__dirname,'..');
+const manifests=['assets/manifest.json','assets/audio/voices/manifest.json'];
+const hash=f=>crypto.createHash('sha256').update(fs.readFileSync(path.join(root,f))).digest('hex');
+const before=manifests.map(hash);
+const images=require('../sync-materials.cjs').syncMaterials();
+const voices=require('../voice-library.cjs').syncVoiceLibrary();
+assert.deepEqual(manifests.map(hash),before,'Startup must not overwrite bundled manifests');
+assert(!images.source&&!voices.source,'No personal import paths in manifests');
+for(const list of Object.values(images.actions))for(const f of list)assert(fs.existsSync(path.join(root,'assets',f)),f);
+for(const list of Object.values(voices.groups))for(const clip of list)assert(fs.existsSync(path.join(root,clip.src)),clip.src);
+assert.equal(Object.values(voices.groups).flat().length,34);
+console.log(JSON.stringify({bundledImagesExist:true,bundledVoicesExist:true,startupDoesNotRescanOriginals:true,manifestsUnchanged:true}));

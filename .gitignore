@@ -1,0 +1,36 @@
+# Installed dependencies and generated output
+node_modules/
+dist/
+release/
+coverage/
+*.log
+*.tmp
+*.zip
+*.7z
+*.dmp
+
+# Local development, recordings, test profiles and backups
+.local/
+work/
+outputs/
+*-profile*/
+backup*/
+materials/
+voice-source/
+新建文件夹/
+
+# Personal configuration and pairing credentials (not shipped)
+settings.json
+tag-link.json
+tag-link.json.*
+tag-link-key.json
+.env
+.env.*
+!.env.example
+
+# Editor / OS files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+desktop.ini

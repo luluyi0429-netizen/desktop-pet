@@ -1,0 +1,38 @@
+const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),os=require('node:os');
+const {createSpecialInteractions}=require('../special-interactions.cjs');
+const {normalize,createPreferences}=require('../preferences.cjs');
+const link=require('../tag-link.cjs');
+let now=0;const c=createSpecialInteractions({now:()=>now});
+assert.equal(c.click(true),'sleep-wake');now+=91000;
+assert.equal(c.click(true),'sleep-wake');now+=91000;
+assert.equal(c.click(true),'sleep-laowu');
+assert.equal(c.click(true),'sleep-wake');now+=300001;assert.equal(c.click(true),'sleep-wake');
+assert.equal(c.click(true),'sleep-wake');assert.equal(c.click(true),'sleep-laowu');
+for(let n=0;n<14;n++){now+=80;assert.equal(c.click(),null);}now+=80;assert.equal(c.click(),'rapid-click');
+for(let n=0;n<14;n++){now+=80;c.click();}now+=1001;assert.equal(c.click(),null);
+assert.equal(normalize({height:300,walking:false}).muted,false);
+const directory=fs.mkdtempSync(path.join(os.tmpdir(),'pet-voice-config-'));
+const preferences=createPreferences(directory);preferences.write({height:240,walking:false,muted:true});assert.equal(preferences.read().muted,true);
+const old={...link.defaults(),revision:2,probability:72,cooldownSeconds:11,rules:link.defaults().rules.filter(r=>r.id!=='penis')};old.rules[0].lines=['自定义台词'];
+fs.writeFileSync(path.join(directory,'tag-link.json'),JSON.stringify(old));
+const config=link.createLinkStore(directory).read();assert.equal(config.revision,4);assert.equal(config.probability,72);assert.equal(config.cooldownSeconds,11);assert.equal(config.rules.find(r=>r.id==='h').lines[0],'自定义台词');
+assert.equal(link.matchRule(config,{kind:'view',tags:['sex','penis']}).id,'h');
+assert.equal(link.matchRule(config,{kind:'copy',tags:['penis']}).id,'copy');
+assert.equal(link.matchRule(config,{kind:'view',tags:['penis_size'] }),null);
+config.rules.find(r=>r.id==='h').enabled=false;assert.equal(link.matchRule(config,{kind:'view',tags:['penis']}),null);
+const {syncVoiceLibrary,createVoicePicker}=require('../voice-library.cjs');const library=syncVoiceLibrary();
+assert.equal(library.unused.length,0);assert.equal(library.missing.length,0);
+const picker=createVoicePicker(library,()=>0),first=picker('click');assert.notEqual(picker('click').src,first.src);
+assert.equal(Object.values(library.groups).flat().length,34);
+assert(fs.existsSync(path.join(__dirname,'../assets/reactions/oh-jing-jing.png')));
+const {harness}=require('./test-behavior-platforms.cjs');
+const pet=harness(.5,true);pet.settings('pet:walking',false);
+function endAudio(){const a=pet.state().audioCue;if(a)pet.send('pet:audio-ended',a.id);}
+function wake(){pet.tick(5.1);pet.settings('pet:preview','sleep');pet.send('pet:drag-start',{x:100,y:100});pet.tick(.05);pet.send('pet:drag-end',true);}
+wake();assert.equal(pet.state().audioCue.reason,'sleep-wake');assert.notEqual(pet.state().action,'laowu');endAudio();
+wake();assert.equal(pet.state().audioCue.reason,'sleep-wake');endAudio();
+wake();assert.equal(pet.state().action,'laowu');assert.equal(pet.state().audioCue.reason,'sleep-laowu');
+const id=pet.state().audioCue.id;pet.send('pet:audio-ended',id-1);assert.equal(pet.state().audioCue.id,id);endAudio();
+pet.settings('pet:muted',true);assert.equal(pet.state().muted,true);pet.settings('pet:laowu');assert.equal(pet.state().action,'laowu');assert.equal(pet.state().audioCue,null);pet.tick(5);assert.notEqual(pet.state().action,'laowu');
+pet.settings('pet:muted',false);pet.settings('pet:laowu');assert.equal(pet.state().audioCue.reason,'manual-laowu');pet.settings('pet:muted',true);assert.equal(pet.state().audioCue,null);
+console.log(JSON.stringify({wakeWindow:true,thirdWakeLaowu:true,rapid15Preserved:true,mutePersistence:true,migrationPreservesSettings:true,unifiedAdultAndCopyRouting:true,exactTag:true,all34Assets:true,noAdjacentRepeat:true,mainIntegration:true}));

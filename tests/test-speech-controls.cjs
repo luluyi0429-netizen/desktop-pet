@@ -1,0 +1,34 @@
+const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),os=require('node:os');
+const root=path.resolve(__dirname,'..');
+const {createSpeechGate,normalizeSpeech}=require(path.join(root,'speech-policy.cjs'));
+let now=0,random=.5;const gate=createSpeechGate({now:()=>now,random:()=>random}),s=normalizeSpeech();
+assert(gate.allow(s));assert(!gate.allow({...s,voiceFrequency:'low'}));assert(gate.allow({...s,voiceFrequency:'low'},{important:true}));
+random=.999;assert(gate.allow({...s,voiceFrequency:'high'}));assert(!gate.allow({...s,voiceFrequency:'normal'}));
+assert(!gate.allow(s,{muted:true,manual:true}));assert(!gate.allow({...s,volume:0},{manual:true}));
+gate.started(s);now=6000;assert(!gate.allow(s,{active:true,important:true}));
+gate.finished(s);assert.equal(gate.remaining(),5000);now+=4999;assert(!gate.allow(s,{important:true}));
+assert(gate.allow(s,{manual:true}));assert(!gate.allow(s,{manual:true,active:true}));assert(gate.allow(s,{active:true,wakeInterrupt:true}));
+now++;assert(gate.allow(s,{important:true}));
+assert.deepEqual(normalizeSpeech({volume:999,voiceFrequency:'bogus',voiceCooldownSeconds:-1}),{volume:100,voiceFrequency:'high',voiceCooldownSeconds:1});
+const {createPreferences}=require(path.join(root,'preferences.cjs'));
+const dir=fs.mkdtempSync(path.join(os.tmpdir(),'pet-speech-prefs-')),prefs=createPreferences(dir);
+prefs.write({height:450,walking:false,muted:true,volume:37,voiceFrequency:'low',voiceCooldownSeconds:12});
+assert.deepEqual(createPreferences(dir).read(),{height:450,walking:false,muted:true,volume:37,voiceFrequency:'low',voiceCooldownSeconds:12});
+const {harness}=require('./test-behavior-platforms.cjs');
+const pet=harness(.5,true);pet.settings('pet:walking',false);
+pet.settings('pet:speech-settings',{voiceFrequency:'low',volume:37,voiceCooldownSeconds:5});pet.send('pet:click');assert.equal(pet.state().audioCue,null);
+pet.settings('pet:speech-settings',{voiceFrequency:'high'});pet.send('pet:click');let cue=pet.state().audioCue;assert(cue.text&&/[\u4e00-\u9fff]/.test(cue.text));
+pet.send('pet:click');assert.equal(pet.state().audioCue.id,cue.id);pet.tick(8);pet.send('pet:audio-ended',cue.id);
+pet.send('pet:click');assert.equal(pet.state().audioCue,null);pet.tick(4.8);pet.send('pet:click');assert.equal(pet.state().audioCue,null);pet.tick(.3);pet.send('pet:click');assert(pet.state().audioCue);
+pet.settings('pet:speech-settings',{volume:0});assert.equal(pet.state().audioCue,null);pet.settings('pet:laowu');assert.equal(pet.state().audioCue,null);
+pet.tick(5);pet.settings('pet:speech-settings',{volume:37});pet.settings('pet:laowu');assert.equal(pet.state().audioCue.reason,'manual-laowu');
+pet.send('pet:audio-ended',pet.state().audioCue.id);pet.tick(5.1);
+for(let wake=1;wake<=3;wake++){
+  pet.settings('pet:preview','sleep');assert.equal(pet.state().audioCue.reason,'sleep');
+  pet.send('pet:drag-start',{x:100,y:100});pet.tick(.05);pet.send('pet:drag-end',true);
+  assert.equal(pet.state().audioCue.reason,wake===3?'sleep-laowu':'sleep-wake');
+  pet.send('pet:audio-ended',pet.state().audioCue.id);pet.tick(5.1);
+}
+let result=pet.receive({kind:'view',clientId:'speech-test',seq:1,postId:'99',tags:['sex','penis'],eventId:'test-1'});
+assert.equal(pet.state().audioCue.reason,'tag-h');assert(pet.state().audioCue.text);assert.equal(pet.state().notice.image,pet.state().audioCue.image);
+console.log(JSON.stringify({probabilityControls:true,cooldownFromAudioEnd:true,overlapSuppressed:true,manualAndWakeExceptions:true,volumeZeroMutes:true,savedPreferences:true,chineseCue:true,threeSleepWakes:true,unifiedAdultVoicePreserved:true}));

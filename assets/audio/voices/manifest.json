@@ -1,0 +1,206 @@
+{
+  "groups": {
+    "click": [
+      {
+        "src": "assets/audio/voices/click_01.mp3",
+        "text": "好痒呀！",
+        "original": "好痒呀！.mp3"
+      },
+      {
+        "src": "assets/audio/voices/click_02.mp3",
+        "text": "叫我了吗？",
+        "original": "叫我了吗？——好奇.mp3"
+      },
+      {
+        "src": "assets/audio/voices/click_03.mp3",
+        "text": "怎么啦？",
+        "original": "怎么啦？.mp3"
+      },
+      {
+        "src": "assets/audio/voices/click_04.mp3",
+        "text": "真是的，别一直戳啦！",
+        "original": "真是的，别一直戳啦！.mp3"
+      }
+    ],
+    "sleep": [
+      {
+        "src": "assets/audio/voices/sleep_01.mp3",
+        "text": "哈啊……有点困了",
+        "original": "哈啊……有点困了.mp3"
+      },
+      {
+        "src": "assets/audio/voices/sleep_02.mp3",
+        "text": "就睡一小会儿……晚安。",
+        "original": "就睡一小会儿……晚安。.mp3"
+      }
+    ],
+    "wake": [
+      {
+        "src": "assets/audio/voices/wake_01.mp3",
+        "text": "唔……人家明明睡得正香呢。",
+        "original": "唔……人家明明睡得正香呢。——迷糊、轻微不满.mp3"
+      }
+    ],
+    "copy": [
+      {
+        "src": "assets/audio/voices/copy_01.mp3",
+        "text": "标签收到了哦",
+        "original": "标签收到了哦.mp3"
+      },
+      {
+        "src": "assets/audio/voices/copy_02.mp3",
+        "text": "又复制了一次呢，辛苦啦！",
+        "original": "又复制了一次呢，辛苦啦！——陪伴感.mp3"
+      }
+    ],
+    "walk": [
+      {
+        "src": "assets/audio/voices/walk_01.mp3",
+        "text": "我去散个步哦。",
+        "original": "我去散个步哦。.mp3"
+      }
+    ],
+    "drag": [
+      {
+        "src": "assets/audio/voices/drag_01.mp3",
+        "text": "你要带我去哪里？",
+        "original": "你要带我去哪里？.mp3"
+      },
+      {
+        "src": "assets/audio/voices/drag_02.mp3",
+        "text": "哇！别突然把我提起来嘛！",
+        "original": "哇！别突然把我提起来嘛！.mp3"
+      }
+    ],
+    "land": [
+      {
+        "src": "assets/audio/voices/land_01.mp3",
+        "text": "呼，安全着陆！",
+        "original": "呼，安全着陆！.mp3"
+      }
+    ],
+    "climbTop": [
+      {
+        "src": "assets/audio/voices/climbTop_01.mp3",
+        "text": "爬到顶啦！",
+        "original": "爬到顶啦！.mp3"
+      }
+    ],
+    "idle": [
+      {
+        "src": "assets/audio/voices/idle_01.mp3",
+        "text": "喂，要不要休息一下？",
+        "original": "喂，要不要休息一下？.mp3"
+      }
+    ],
+    "cute": [
+      {
+        "src": "assets/audio/voices/cute_01.mp3",
+        "text": "哇，这个角色好可爱呀",
+        "original": "哇，这个角色好可爱呀.mp3"
+      }
+    ],
+    "cool": [
+      {
+        "src": "assets/audio/voices/cool_01.mp3",
+        "text": "哦哦，好帅！",
+        "original": "哦哦，好帅！——赞叹.mp3"
+      }
+    ],
+    "collect": [
+      {
+        "src": "assets/audio/voices/collect_01.mp3",
+        "text": "这个也要保存吗？……真贪心呀。",
+        "original": "这个也要保存吗？……真贪心呀。.mp3"
+      }
+    ],
+    "rapid": [
+      {
+        "src": "assets/audio/voices/rapid_01.mp3",
+        "text": "真是的！不要一直连点啦！",
+        "original": "真是的！不要一直连点啦！——提高音量，但别尖叫.mp3"
+      }
+    ],
+    "penis": [
+      {
+        "src": "assets/audio/voices/penis_01.mp3",
+        "text": "哦鲸鲸",
+        "original": "哦鲸鲸.mp3"
+      }
+    ],
+    "h": [
+      {
+        "src": "assets/audio/voices/h_01.mp3",
+        "text": "……看见了哦。",
+        "original": "……看见了哦。——停顿后轻轻说.mp3"
+      },
+      {
+        "src": "assets/audio/voices/h_02.mp3",
+        "text": "不用藏啦，我已经看见了。",
+        "original": "不用藏啦，我已经看见了。.mp3"
+      },
+      {
+        "src": "assets/audio/voices/h_03.mp3",
+        "text": "才、才没有……我一点都不好奇。",
+        "original": "才、才没有……我一点都不好奇。.mp3"
+      },
+      {
+        "src": "assets/audio/voices/h_04.mp3",
+        "text": "哼嗯……原来你喜欢这种呀。",
+        "original": "哼嗯……原来你喜欢这种呀。.mp3"
+      },
+      {
+        "src": "assets/audio/voices/h_05.mp3",
+        "text": "看得这么入神……不害羞吗？",
+        "original": "看得这么入神……不害羞吗？.mp3"
+      },
+      {
+        "src": "assets/audio/voices/h_06.mp3",
+        "text": "闷骚。",
+        "original": "闷骚。——小声嘀咕、调侃.mp3"
+      },
+      {
+        "src": "assets/audio/voices/h_07.mp3",
+        "text": "涩涩！／色鬼！",
+        "original": "涩涩！／色鬼！.mp3"
+      },
+      {
+        "src": "assets/audio/voices/h_08.mp3",
+        "text": "涩涩！／色鬼！",
+        "original": "涩涩！／色鬼！(1).mp3"
+      },
+      {
+        "src": "assets/audio/voices/h_09.mp3",
+        "text": "又在看这种东西啦？",
+        "original": "又在看这种东西啦？.mp3"
+      },
+      {
+        "src": "assets/audio/voices/h_10.mp3",
+        "text": "这个……可能有点太刺激了。",
+        "original": "这个……可能有点太刺激了。.mp3"
+      },
+      {
+        "src": "assets/audio/voices/h_11.mp3",
+        "text": "这件事，是我们两个人的秘密哦",
+        "original": "这件事，是我们两个人的秘密哦.mp3"
+      },
+      {
+        "src": "assets/audio/voices/h_12.mp3",
+        "text": "真是的，你在看什么呀？",
+        "original": "真是的，你在看什么呀？——害羞地吐槽.mp3"
+      },
+      {
+        "src": "assets/audio/voices/h_13.mp3",
+        "text": "真是的……你这个色鬼。",
+        "original": "真是的……你这个色鬼。.mp3"
+      },
+      {
+        "src": "assets/audio/voices/h_14.mp3",
+        "text": "真是的……只限今天哦。",
+        "original": "真是的……只限今天哦。.mp3"
+      }
+    ]
+  },
+  "missing": [],
+  "unused": []
+}

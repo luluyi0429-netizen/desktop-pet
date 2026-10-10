@@ -1,0 +1,32 @@
+const assert=require('node:assert/strict');
+const {harness}=require('./test-behavior-platforms.cjs');
+const {chooseClimb,explainClimb}=require('../climb-motion.cjs');
+const frame=()=>({id:'explorer',bounds:{x:250,y:350,width:650,height:400},client:{x:250,y:385,width:650,height:365}});
+function setup(){const p=harness();p.settings('pet:walking',false);p.settings('pet:scale',56);p.frames([frame()]);return p;}
+function until(p,check,seconds=60,step=s=>p.tick(s)){for(let t=0;t<seconds;t+=.032){if(check(p.state()))return p.state();step(.032);}throw Error('Timeout: '+JSON.stringify(p.state()));}
+const raised=setup(), f=frame();
+assert.equal(chooseClimb([f],raised.state().bounds,raised.area,null),null,'Automatic climb keeps physical reach check');
+raised.settings('pet:preview','climb');assert.equal(raised.state().climbing.phase,'approach');
+until(raised,s=>s.climbing?.phase==='hop');const before=raised.state().bounds;
+raised.tick(.2);assert(raised.state().bounds.y<before.y);assert.equal(raised.state().bounds.x,before.x);
+until(raised,s=>s.climbing?.phase==='ascend');until(raised,s=>s.support?.edge==='top');
+assert.equal(raised.state().bounds.y+raised.state().bounds.height,f.bounds.y);
+raised.settings('pet:preview','climb');assert.match(raised.state().notice.text,/已经站在/);
+const workbench=setup();let seq=0;
+workbench.browser({id:'browser',bounds:{x:0,y:0,width:1200,height:1000},viewports:[{x:150,y:90,width:1050,height:900}]});
+const panel=()=>workbench.receive({kind:'panel',panel:{left:450,top:420,width:400,height:450,innerWidth:1050,innerHeight:900,screenX:0,screenY:0,dpr:1.25},postId:'custom',clientId:'climb-workbench',seq:++seq,tags:[]});
+const step=seconds=>{panel();workbench.tick(seconds);};step(.1);assert.equal(workbench.state().support.edge,'workbench');
+workbench.settings('pet:preview','climb');assert.equal(workbench.state().climbing.phase,'depart');
+until(workbench,s=>s.climbing?.phase==='approach',60,step);
+until(workbench,s=>s.climbing?.phase==='hop',60,step);
+until(workbench,s=>s.support?.edge==='top',60,step);
+for(let i=0;i<50;i++)step(.1);assert.equal(workbench.state().support.edge,'top','Workbench must not immediately steal a completed manual climb');
+for(let i=0;i<110;i++)step(.1);assert.equal(workbench.state().support.edge,'workbench','Automatic workbench docking resumes after grace');
+const far=setup();far.frames([{...f,bounds:{x:10,y:350,width:300,height:400},client:{x:10,y:385,width:300,height:365}}]);
+assert.equal(chooseClimb(far.state().support?[]:[{...f,bounds:{x:10,y:350,width:300,height:400}}],far.state().bounds,far.area,null,640),null);
+far.settings('pet:preview','climb');assert(far.state().climbing,'Manual command can reach farther same-display windows');until(far,s=>s.support?.edge==='top');
+const noRoom=setup();noRoom.frames([{...f,bounds:{...f.bounds,y:0}}]);noRoom.settings('pet:preview','climb');assert.equal(noRoom.state().climbing,null);assert.match(noRoom.state().notice.text,/顶部空间不足/);
+const none=setup();none.frames([]);none.settings('pet:preview','climb');assert.match(none.state().notice.text,/未检测到文件管理器/);
+assert.match(explainClimb([{...f,bounds:{...f.bounds,x:-2000}}],none.state().bounds,none.area,null),/另一块屏幕/);
+const lost=setup();lost.settings('pet:preview','climb');until(lost,s=>s.climbing?.phase==='hop');lost.frames([]);lost.tick(.9);assert(!lost.state().climbing);until(lost,s=>s.docked&&!s.falling);
+console.log(JSON.stringify({raisedWindowHopAndAscent:true,automaticReachUnchanged:true,workbenchDeparture:true,workbenchReturnsAfterGrace:true,distantManualApproach:true,noTopSpaceDiagnostic:true,noExplorerDiagnostic:true,otherDisplayDiagnostic:true,lostWindowDuringHopFallsSafely:true}));

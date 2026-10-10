@@ -1,0 +1,61 @@
+{
+  "actions": {
+    "idle": [
+      "idle/1站立.png"
+    ],
+    "blink": [
+      "blink/闭眼.png"
+    ],
+    "click": [
+      "click/点击.png",
+      "click/点击2.png",
+      "click/点击3.png",
+      "click/点击4.png"
+    ],
+    "drag": [
+      "drag/提起.png"
+    ],
+    "land": [
+      "land/落地.png"
+    ],
+    "sleep": [
+      "sleep/睡觉1.png",
+      "sleep/睡觉2.png"
+    ],
+    "climb": [
+      "climb/爬.png",
+      "climb/爬2.png"
+    ],
+    "laowu": [
+      "laowu/老吴.png"
+    ],
+    "walk-left": [
+      "walk-left/1.png",
+      "walk-left/2.png",
+      "walk-left/3.png",
+      "walk-left/4.png",
+      "walk-left/5.png",
+      "walk-left/6.png",
+      "walk-left/7.png",
+      "walk-left/8.png",
+      "walk-left/9.png"
+    ],
+    "walk-right": [
+      "walk-right/1.png",
+      "walk-right/2.png",
+      "walk-right/3.png",
+      "walk-right/4.png",
+      "walk-right/5.png",
+      "walk-right/6.png",
+      "walk-right/7.png",
+      "walk-right/8.png",
+      "walk-right/9.png"
+    ]
+  },
+  "audio": {
+    "laowu": "audio/laowu.aac"
+  },
+  "reactions": {
+    "penis": "reactions/oh-jing-jing.png"
+  }
+}

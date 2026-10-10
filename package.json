@@ -1,0 +1,19 @@
+{
+  "name": "desktop-pet-prototype",
+  "version": "0.1.0",
+  "private": true,
+  "description": "桌面宠物基础原型",
+  "main": "main.cjs",
+  "scripts": {
+    "start": "electron .",
+    "test": "node scripts/run-tests.cjs",
+    "check": "node scripts/check-project.cjs",
+    "build:browser": "node scripts/build-tag-link.cjs",
+    "import:images": "node sync-materials.cjs",
+    "import:voices": "node voice-library.cjs",
+    "test:shutdown": "electron tests/test-shutdown-live.cjs"
+  },
+  "devDependencies": {
+    "electron": "^32.2.0"
+  }
+}
