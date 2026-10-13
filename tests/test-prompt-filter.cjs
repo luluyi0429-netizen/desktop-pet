@@ -1,0 +1,14 @@
+const assert=require('node:assert/strict');
+const p=require('../prompt-filter.js');
+const items=p.parse('<lora:sample:0.7>\nmasterpiece, best quality, score_9, (blue hair:1.2), (red, blue:0.8), 1girl\nShe is sitting by the window, while the warm light falls across the room.\nNegative prompt: low quality, blurry\nSteps: 20, Seed: 123');
+assert.equal(items.filter(i=>i.category==='lora').length,1);assert.equal(items[0].selected,false);
+assert.equal(items.filter(i=>i.category==='quality').length,4);
+assert.equal(items.find(i=>i.text==='(blue hair:1.2)').category,'appearance');
+assert(items.some(i=>i.text==='(red, blue:0.8)'));
+assert.equal(items.filter(i=>i.category==='natural').length,1);
+assert.equal(p.output(items,'negative'),'low quality, blurry');assert(!p.output(items,'positive').includes('blurry'));assert(!p.sections(items).includes('<lora'));
+assert.equal(p.split('one\\,two, three').length,2);
+assert.equal(p.parse('Prompt: blue sky')[0].text,'blue sky');
+assert.equal(p.parse('prompting words')[0].text,'prompting words');
+assert(p.parse('masterpiece, blue hair, red eyes, long hair, white shirt, black skirt, standing, outdoors, (soft light:1.2), trees').length>5,'Decimal weights do not turn a tag paragraph into one natural sentence');
+console.log(JSON.stringify({loraExcluded:true,weightsIntact:true,naturalSentencesIntact:true,positiveNegativeSeparate:true,qualityAndAppearance:true}));

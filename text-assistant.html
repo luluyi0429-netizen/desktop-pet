@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'none'; base-uri 'none'; form-action 'none'">
+<title>桌宠 · 选中文本</title><link rel="stylesheet" href="text-assistant.css">
+</head>
+<body>
+<main>
+  <header class="hero"><div><p class="eyebrow">DESKTOP COMPANION · TEXT</p><h1>把这一段，读懂。</h1><p class="subtitle">翻译文字，整理提示词，留下你需要的部分。</p></div><button id="pin" class="pin" aria-pressed="true" title="始终显示在其他普通窗口上方">已置顶</button></header>
+  <div class="shortcut"><span><kbd>Ctrl</kbd> + <kbd>Alt</kbd> + <kbd>T</kbd> 读取选区</span><span><kbd>Ctrl</kbd> + <kbd>Alt</kbd> + <kbd>V</kbd> 读取已复制的文字</span></div>
+  <p id="shortcut-warning" class="warning" hidden></p>
+  <section class="paper" aria-labelledby="source-title">
+    <div class="section-head"><label id="source-title" for="source">01 / 原文</label><div><button id="clipboard" class="quiet">读取剪贴板</button><button id="clear" class="quiet">清空</button></div></div>
+    <textarea id="source" rows="5" maxlength="8000" placeholder="先在其他窗口选中文字，再按 Ctrl+Alt+T。\n也可以在这里直接粘贴。" spellcheck="false"></textarea>
+    <div class="footnote"><span id="source-kind">原文只在本次窗口内保留</span><span id="count">0 / 8000</span></div>
+  </section>
+  <div class="task-row"><div class="segmented" role="group" aria-label="处理方式"><button data-task="translate" aria-pressed="true">翻译成中文</button><button data-task="filter" aria-pressed="false">标签过滤</button></div><button id="run" class="primary">开始处理</button><button id="cancel" hidden>取消</button></div>
+  <p id="destination" class="privacy">先在下方配置 AI 接口。点击“开始处理”才会发送原文。</p>
+  <p id="status" class="status" role="status" aria-live="polite">准备好一段文字，就可以开始了。</p>
+  <section id="filter-panel" class="paper" hidden aria-labelledby="filter-title"><div class="section-head"><h2 id="filter-title">提示词筛选</h2><span>勾选保留 · LoRA 默认排除</span></div><p class="help">本地规则分类，无需 AI 接口。分类可调整；权重括号与自然语句保持完整。</p><div id="filter-groups"></div><form id="add-prompt" class="prompt-add"><label for="new-prompt">添加提示词</label><textarea id="new-prompt" rows="2" maxlength="2000" placeholder="输入需要补充的标签或自然语句"></textarea><select id="new-polarity" aria-label="新增提示词方向"><option value="positive">正向</option><option value="negative">负面</option></select><select id="new-category" aria-label="新增提示词类别"><option value="auto">自动分类</option><option value="appearance">角色外貌</option><option value="quality">质量词</option><option value="tags">提示词字段</option><option value="natural">自然语句</option><option value="lora">LoRA 标记</option></select><button type="submit">添加</button></form><div class="filter-copy"><button id="copy-positive">复制正向</button><button id="copy-negative">复制负面</button></div></section><section class="paper result" aria-labelledby="result-title"><div class="section-head"><h2 id="result-title">02 / 结果</h2><button id="copy" class="quiet" disabled>复制结果</button></div><div id="result" class="result-text" tabindex="0">处理结果会显示在这里。</div><p id="incomplete" class="warning" hidden>模型输出达到长度限制，结果可能不完整；可缩短原文再试。</p></section>
+  <details id="configuration"><summary>AI 接口设置 <span id="config-badge">未配置</span></summary>
+    <form id="config-form">
+      <p class="help">支持兼容 Chat Completions 的服务。地址可填写带版本路径的 Base URL，或完整的 /chat/completions 地址。</p>
+      <label for="endpoint">API 地址</label><input id="endpoint" type="url" placeholder="https://你的服务地址/v1" required maxlength="2048" autocomplete="off">
+      <div class="config-grid"><div><label for="model">模型名称</label><input id="model" placeholder="填写服务商给出的模型 ID" required maxlength="128" autocomplete="off"></div><div><label for="api-key">API 密钥</label><input id="api-key" type="password" placeholder="本机加密保存" maxlength="8192" autocomplete="new-password"></div></div>
+      <label class="checkbox"><input id="remove-key" type="checkbox">删除已保存的密钥（无需密钥的本地接口可留空）</label>
+      <p id="endpoint-warning" class="warning" hidden>更换 API 地址会清除原有密钥，请按新服务的要求重新填写。</p>
+      <div class="config-actions"><button id="save" type="submit">保存接口设置</button><span id="save-status" role="status"></span></div>
+      <p class="help">密钥不回显、不写入项目；选区和结果不保存历史。当前仅显示文字，不启用系统朗读。</p>
+    </form>
+  </details>
+  <footer>AI 输出可能有误，请核对关键内容。按 Esc 关闭并清空本次文字。</footer>
+</main><script src="prompt-filter.js"></script><script src="text-assistant.js"></script>
+</body></html>

@@ -18,8 +18,10 @@ function createPetTray(imageData, controls) {
           click: () => controls.scale(percent)
         })) },
         {label:'静音（所有语音）',type:'checkbox',checked:state.muted,click:item=>controls.muted(item.checked)},
-        {label:'老吴',click:()=>controls.laowu()},
+        {label:'神秘小按钮',click:()=>controls.laowu()},
+        {label:'暴怒 ▶',click:()=>controls.rage()},
         { label: '标签联动…', click: () => controls.tags() },
+        { label: '选中文本…（Ctrl+Alt+T）', click: () => controls.text() },
         { label: '打开设置', click: () => controls.settings() },
         { type: 'separator' },
         { label: '回到桌面 / 找回桌宠', click: () => controls.home() },

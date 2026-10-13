@@ -64,8 +64,8 @@ function render(state) {
   if (changed) {
     clearInterval(animationTimer);
     frameIndex = 0;
-    if (state.action.startsWith('walk-') || ['climb', 'sleep'].includes(state.action)) {
-      const delay = state.action === 'sleep' ? 700 : state.action === 'climb' ? state.behavior.crawlFrameMs : state.behavior.walkFrameMs;
+    if (state.action.startsWith('walk-') || ['climb', 'sleep','sit'].includes(state.action)) {
+      const delay = state.action === 'sit' ? 950 : state.action === 'sleep' ? 700 : state.action === 'climb' ? state.behavior.crawlFrameMs : state.behavior.walkFrameMs;
       animationTimer = setInterval(() => { frameIndex++; displayFrame(); }, delay);
     }
   }
@@ -92,6 +92,8 @@ if (api) {
   pet.addEventListener('pointerdown', event => {
     if (event.button !== 0) return;
     event.preventDefault();
+    const region=window.petHitRegions.hit({action:currentState?.action,frame:Number(pet.dataset.frame)||0,
+      rect:pet.getBoundingClientRect(),x:event.clientX,y:event.clientY,mirrored:pet.style.transform==='scaleX(-1)'});
     activePointer = event.pointerId;
     pointerStart = { x: event.screenX, y: event.screenY };
     isDragging = false;
@@ -99,10 +101,10 @@ if (api) {
     document.body.setPointerCapture(event.pointerId);
     if (currentState && sprites && currentState.action!=='laowu') {
       clickIndex = Math.floor(Math.random() * sprites.actions.click.length);
-      render({ ...currentState, action: currentState.falling ? 'drag' : 'click', clickFrame: clickIndex });
+      render({ ...currentState, action: currentState.falling ? 'drag' : currentState.action==='sit'?'sit':'click', clickFrame: clickIndex });
     }
     // Begin holding immediately: movement and gravity pause before the threshold.
-    api.dragStart(pointerStart, clickIndex);
+    api.dragStart(pointerStart, clickIndex,region);
   });
   window.addEventListener('pointermove', event => {
     if (event.pointerId !== activePointer) return;

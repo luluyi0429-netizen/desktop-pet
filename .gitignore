@@ -24,6 +24,8 @@ settings.json
 tag-link.json
 tag-link.json.*
 tag-link-key.json
+text-assistant.json
+text-assistant.json.*
 .env
 .env.*
 !.env.example
@@ -34,3 +36,5 @@ tag-link-key.json
 .DS_Store
 Thumbs.db
 desktop.ini
+
+text-panel.json

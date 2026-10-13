@@ -36,7 +36,7 @@ public class ExplorerFrames {
       EnumWindows(delegate(IntPtr window, IntPtr data) {
         if (!IsWindowVisible(window) || IsIconic(window)) return true;
         var name = new StringBuilder(256); GetClassName(window, name, name.Capacity);
-        bool browser = name.ToString() == "Chrome_WidgetWin_1" && window == GetForegroundWindow();
+        bool browser = name.ToString() == "Chrome_WidgetWin_1";
         if (!browser && name.ToString() != "CabinetWClass" && name.ToString() != "ExploreWClass") return true;
         int cloaked; if (GetCloaked(window,14,out cloaked,4)==0 && cloaked!=0) return true;
         Rect rect, client;

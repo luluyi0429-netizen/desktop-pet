@@ -1,10 +1,19 @@
 const api = window.desktopPet;
+document.querySelectorAll('[data-site]').forEach(button=>button.addEventListener('click',()=>api.openSite(button.dataset.site)));
 const slider = document.querySelector('#size');
 const percent = document.querySelector('#percent');
 document.querySelector('#tag-settings').addEventListener('click', () => api.openTagSettings());
+document.querySelector('#text-assistant').addEventListener('click', () => api.openTextAssistant());
 document.querySelector('#muted').addEventListener('change',event=>api.setMuted(event.target.checked));
 document.querySelector('#laowu').addEventListener('click',()=>{api.laowu();api.closeSettings();});
+document.querySelector('#rage').addEventListener('click',()=>api.rage());
 let adjusting = false;
+document.querySelector('#fall-voice').addEventListener('change',event=>api.setSpeechSettings({fallVoiceEnabled:event.target.checked}));
+document.querySelector('#import-voices').addEventListener('click',async event=>{
+ event.target.disabled=true;
+ try{const result=await api.importVoices();document.querySelector('#voice-import-status').textContent=result.ok?'导入完成：日语 '+result.counts.ja+' 段，保留中文彩蛋 '+result.counts.zh+' 段；跳过 '+result.unused+' 个文件。':result.cancelled?'已取消。':result.error;}
+ catch{document.querySelector('#voice-import-status').textContent='导入失败，请重试。';}finally{event.target.disabled=false;}
+});
 const editingVoice = new Set();
 const voiceSliders = [
   {id:'volume',key:'volume',output:'volume-value',suffix:'%',fallback:100},
@@ -26,6 +35,7 @@ document.querySelectorAll('[data-frequency]').forEach(button=>{
 });
 function render(state) {
   if (!state) return;
+  document.querySelector('#fall-voice').checked=state.fallVoiceEnabled!==false;
   slider.max = 200;
   document.querySelector('#walking').checked = state.walking;
   document.querySelector('#muted').checked=state.muted;
@@ -38,7 +48,7 @@ function render(state) {
   }
   document.querySelectorAll('[data-frequency]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.frequency===(state.voiceFrequency||'high'))));
   document.querySelector('#laowu').disabled=Boolean(state.falling||state.climbing||state.pressed);
-  document.querySelector('#support').textContent = state.explorer && state.explorer.error ? state.explorer.error : state.support ? '已停靠文件管理器边框' : '拖动后松手可停靠窗口';
+  document.querySelector('#support').textContent = state.explorer && state.explorer.error ? state.explorer.error : state.support ? '已停靠文件管理器边框' : '在任务栏活动 · 可拖到文件管理器边框';
   const value = Math.round(state.height / 3);
   if (!adjusting) slider.value = value;
   percent.textContent = `${value}%`;

@@ -28,6 +28,7 @@ function createExplorerMonitor(screen, onUpdate = () => {}, onCopy = () => {}) {
       child.on('exit', () => { child = null; if (!stopped) clear('窗口检测已停止'); });
     },
     getWindows() { return Date.now() - updated < 2000 ? windows.filter(w => !w.browser) : []; },
+    getBrowsers() { return Date.now()-updated<2000?windows.filter(w=>w.browser):[]; },
     getBrowser() { return Date.now() - updated < 700 ? windows.find(w => w.browser) : null; },
     status() { return { ready: updated > 0 && Date.now() - updated < 2000, error }; },
     stop() { stopped = true; if (lines) lines.close(); if (child) child.kill(); child = null; windows = []; }

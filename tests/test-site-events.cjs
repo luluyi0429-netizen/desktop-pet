@@ -1,0 +1,10 @@
+const assert=require('node:assert/strict');
+const {validateEvent,createReactionEngine}=require('../tag-link.cjs');
+let now=1000;const reactions=[];const engine=createReactionEngine({now:()=>now,random:()=>0,onReaction:r=>reactions.push(r)});
+const base={v:1,kind:'view',clientId:'site-test-client',seq:1,postId:'123',tags:['penis']};
+assert.equal(validateEvent({...base,site:'other'}),null);
+assert.equal(validateEvent(base).site,'danbooru');
+assert.equal(engine.receive(validateEvent({...base,site:'danbooru'})),'reacted');assert(reactions[0].genital);
+now+=6000;assert.equal(engine.receive(validateEvent({...base,seq:2,site:'civitai',tags:['sex']})),'reacted');assert.equal(reactions[1].genital,false);
+now+=6000;assert.equal(engine.receive(validateEvent({...base,seq:3,site:'danbooru'})),'duplicate');
+console.log(JSON.stringify({siteValidation:true,sameNumericIdAcrossSitesIndependent:true,genitalContext:true,perSiteDeduplication:true}));

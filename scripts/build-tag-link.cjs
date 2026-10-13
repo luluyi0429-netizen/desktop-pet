@@ -1,9 +1,7 @@
 const fs=require('node:fs'),path=require('node:path');
-const root=path.resolve(__dirname,'..'),file=path.join(root,'browser','danbooru-tag-tool.user.js');
-const script=fs.readFileSync(file,'utf8');
-const begin='  // DESKTOP PET LINK BEGIN',end='  // DESKTOP PET LINK END';
-const first=script.indexOf(begin),last=script.indexOf(end);
-if(first<0||last<first)throw Error('Desktop pet integration markers missing');
-const block=begin+'\n'+fs.readFileSync(path.join(root,'browser-tag-link.js'),'utf8')+'\n  const petLink = createPetLink(panel);\n'+end;
-fs.writeFileSync(file,script.slice(0,first)+block+script.slice(last+end.length));
-console.log('Updated browser/danbooru-tag-tool.user.js');
+const root=path.resolve(__dirname,'..'),file=path.join(root,'browser','danbooru-tag-tool.user.js'),nl=String.fromCharCode(10);
+let script=fs.readFileSync(file,'utf8');
+function embed(begin,end,body){const first=script.indexOf(begin),last=script.indexOf(end);if(first<0||last<first)throw Error('Missing markers '+begin);script=script.slice(0,first)+[begin,body,end].join(nl)+script.slice(last+end.length);}
+embed('  // PROMPT FILTER BEGIN','  // PROMPT FILTER END',['prompt-filter.js','civitai-prompts.js'].map(f=>fs.readFileSync(path.join(root,f),'utf8')).join(nl));
+embed('  // DESKTOP PET LINK BEGIN','  // DESKTOP PET LINK END',fs.readFileSync(path.join(root,'browser-tag-link.js'),'utf8')+nl+'  const petLink = createPetLink(panel);');
+fs.writeFileSync(file,script);console.log('Built browser userscript for both sites');

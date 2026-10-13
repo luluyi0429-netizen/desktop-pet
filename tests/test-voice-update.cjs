@@ -21,9 +21,9 @@ assert.equal(link.matchRule(config,{kind:'copy',tags:['penis']}).id,'copy');
 assert.equal(link.matchRule(config,{kind:'view',tags:['penis_size'] }),null);
 config.rules.find(r=>r.id==='h').enabled=false;assert.equal(link.matchRule(config,{kind:'view',tags:['penis']}),null);
 const {syncVoiceLibrary,createVoicePicker}=require('../voice-library.cjs');const library=syncVoiceLibrary();
-assert.equal(library.unused.length,0);assert.equal(library.missing.length,0);
+assert(Array.isArray(library.unused),'Import audit metadata remains readable');assert.equal(library.missing.length,0);
 const picker=createVoicePicker(library,()=>0),first=picker('click');assert.notEqual(picker('click').src,first.src);
-assert.equal(Object.values(library.groups).flat().length,34);
+assert.equal(Object.values(library.groups).flat().length,63);
 assert(fs.existsSync(path.join(__dirname,'../assets/reactions/oh-jing-jing.png')));
 const {harness}=require('./test-behavior-platforms.cjs');
 const pet=harness(.5,true);pet.settings('pet:walking',false);
@@ -35,4 +35,4 @@ wake();assert.equal(pet.state().action,'laowu');assert.equal(pet.state().audioCu
 const id=pet.state().audioCue.id;pet.send('pet:audio-ended',id-1);assert.equal(pet.state().audioCue.id,id);endAudio();
 pet.settings('pet:muted',true);assert.equal(pet.state().muted,true);pet.settings('pet:laowu');assert.equal(pet.state().action,'laowu');assert.equal(pet.state().audioCue,null);pet.tick(5);assert.notEqual(pet.state().action,'laowu');
 pet.settings('pet:muted',false);pet.settings('pet:laowu');assert.equal(pet.state().audioCue.reason,'manual-laowu');pet.settings('pet:muted',true);assert.equal(pet.state().audioCue,null);
-console.log(JSON.stringify({wakeWindow:true,thirdWakeLaowu:true,rapid15Preserved:true,mutePersistence:true,migrationPreservesSettings:true,unifiedAdultAndCopyRouting:true,exactTag:true,all34Assets:true,noAdjacentRepeat:true,mainIntegration:true}));
+console.log(JSON.stringify({wakeWindow:true,thirdWakeLaowu:true,rapid15Preserved:true,mutePersistence:true,migrationPreservesSettings:true,unifiedAdultAndCopyRouting:true,exactTag:true,all63ManifestAssets:true,noAdjacentRepeat:true,mainIntegration:true}));

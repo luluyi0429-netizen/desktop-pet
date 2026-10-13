@@ -42,20 +42,25 @@ body { overflow-y: auto; }
 <div class="ticks"><span>50%</span><span>100%</span><span>150%</span><span>200%</span></div>
 <div class="walking"><input id="walking" type="checkbox" checked><label for="walking">自动散步 / 攀爬</label></div>
 <div class="actions"><button data-action="idle">站立</button><button data-action="sleep">睡觉</button><button data-action="climb">爬上窗口</button></div>
-<p style="font-size:11px;color:#817477;margin:10px 0 0">活动间隔 18–32 秒 · 90 秒未互动入睡<br>拖到文件管理器上沿 / 内部下沿可停靠<br>5 分钟内叫醒 3 次触发老吴</p>
+<p style="font-size:11px;color:#817477;margin:10px 0 0">活动间隔 18–32 秒 · 5 分钟未互动入睡 · 睡满 2 分钟自动醒来<br>拖到文件管理器上沿 / 内部下沿可停靠<br>5 分钟内叫醒 3 次触发神秘小按钮</p>
 <div id="support" style="font-size:11px;color:#817477;margin-top:4px" aria-live="polite"></div>
 <div class="walking"><input id="muted" type="checkbox"><label for="muted">静音（所有语音）</label></div>
 <section class="speech" aria-labelledby="speech-title">
-<h2 id="speech-title">语音设置</h2>
+<h2 id="speech-title">语音设置</h2><p class="hint">角色默认在任务栏活动，标签工作台只负责标签联动。</p>
+<div class="walking"><input id="fall-voice" type="checkbox" checked><label for="fall-voice">下落时播放语音</label></div>
+<button id="import-voices">导入配音文件夹…</button><p class="hint" id="voice-import-status" role="status">仅使用日语配音（文件名如 click_ja_01.wav），中文字幕不变；中文仅保留“中国人能飞”。</p>
 <div class="value-row"><label for="volume">桌宠音量</label><output id="volume-value" for="volume">100%</output></div>
 <input id="volume" type="range" min="0" max="100" step="1" value="100">
 <div class="value-row"><span>说话频率</span></div>
 <div class="frequency" role="group" aria-label="说话频率"><button data-frequency="low" aria-pressed="false">少说</button><button data-frequency="normal" aria-pressed="false">标准</button><button data-frequency="high" aria-pressed="true">多说</button></div>
 <div class="value-row"><label for="voice-cooldown">语音冷却</label><output id="cooldown-value" for="voice-cooldown">5 秒</output></div>
 <input id="voice-cooldown" type="range" min="1" max="60" step="1" value="5">
-<p class="hint">播放结束后开始冷却 · 拖动即保存<br>频率影响普通互动；手动老吴可立即播放。<br>静音时不发声，音量滑块保留原设置。</p>
+<p class="hint">播放结束后开始冷却 · 拖动即保存<br>频率影响普通互动；手动神秘小按钮可立即播放。<br>静音时不发声，音量滑块保留原设置。</p>
 </section>
-<div class="actions"><button id="laowu">老吴</button><button id="tag-settings">标签联动…</button></div>
+<div class="actions"><button id="laowu">神秘小按钮</button><button id="rage">暴怒 ▶</button></div>
+<div class="actions"><button id="tag-settings">标签联动…</button><button id="text-assistant">选中文本…</button></div>
+<p class="hint">Ctrl+Alt+T 读取选区 · Ctrl+Alt+V 读取已复制文字</p>
+<section class="speech" aria-labelledby="teleport-title"><h2 id="teleport-title">一键传送</h2><div class="actions"><button data-site="civitai">Civitai</button><button data-site="danbooru">Danbooru</button></div></section>
 <div class="buttons"><button id="reset">重置</button><button id="stand">站到任务栏</button><button id="quit">退出</button></div>
 <script src="settings.js"></script>
 </body>

@@ -2,205 +2,508 @@
   "groups": {
     "click": [
       {
+        "src": "assets/audio/voices/click_ja_01.mp3",
+        "text": "嗯？叫我做什么呀。",
+        "original": "click_ja_01.mp3",
+        "language": "ja"
+      },
+      {
+        "src": "assets/audio/voices/click_ja_02.mp3",
+        "text": "我在这里，慢慢说。",
+        "original": "click_ja_02.mp3",
+        "language": "ja"
+      },
+      {
         "src": "assets/audio/voices/click_01.mp3",
         "text": "好痒呀！",
-        "original": "好痒呀！.mp3"
+        "original": "好痒呀！.mp3",
+        "language": "ja",
+        "legacy": true
       },
       {
         "src": "assets/audio/voices/click_02.mp3",
         "text": "叫我了吗？",
-        "original": "叫我了吗？——好奇.mp3"
+        "original": "叫我了吗？——好奇.mp3",
+        "language": "ja",
+        "legacy": true
       },
       {
         "src": "assets/audio/voices/click_03.mp3",
         "text": "怎么啦？",
-        "original": "怎么啦？.mp3"
+        "original": "怎么啦？.mp3",
+        "language": "ja",
+        "legacy": true
       },
       {
         "src": "assets/audio/voices/click_04.mp3",
         "text": "真是的，别一直戳啦！",
-        "original": "真是的，别一直戳啦！.mp3"
+        "original": "真是的，别一直戳啦！.mp3",
+        "language": "ja",
+        "legacy": true
       }
     ],
     "sleep": [
       {
+        "src": "assets/audio/voices/sleep_ja_01.mp3",
+        "text": "有点困了……我眯一会儿。",
+        "original": "sleep_ja_01.mp3",
+        "language": "ja"
+      },
+      {
         "src": "assets/audio/voices/sleep_01.mp3",
         "text": "哈啊……有点困了",
-        "original": "哈啊……有点困了.mp3"
+        "original": "哈啊……有点困了.mp3",
+        "language": "ja",
+        "legacy": true
       },
       {
         "src": "assets/audio/voices/sleep_02.mp3",
         "text": "就睡一小会儿……晚安。",
-        "original": "就睡一小会儿……晚安。.mp3"
+        "original": "就睡一小会儿……晚安。.mp3",
+        "language": "ja",
+        "legacy": true
       }
     ],
     "wake": [
       {
+        "src": "assets/audio/voices/wake_ja_01.mp3",
+        "text": "唔……让我再睡一会儿嘛。",
+        "original": "wake_ja_01.mp3",
+        "language": "ja"
+      },
+      {
+        "src": "assets/audio/voices/wake_ja_02.mp3",
+        "text": "怎么啦？我刚刚睡着呢。",
+        "original": "wake_ja_02.mp3",
+        "language": "ja"
+      },
+      {
         "src": "assets/audio/voices/wake_01.mp3",
         "text": "唔……人家明明睡得正香呢。",
-        "original": "唔……人家明明睡得正香呢。——迷糊、轻微不满.mp3"
+        "original": "唔……人家明明睡得正香呢。——迷糊、轻微不满.mp3",
+        "language": "ja",
+        "legacy": true
       }
     ],
     "copy": [
       {
+        "src": "assets/audio/voices/copy_ja_01.mp3",
+        "text": "收好啦，别弄丢了。",
+        "original": "copy_ja_01.mp3",
+        "language": "ja"
+      },
+      {
         "src": "assets/audio/voices/copy_01.mp3",
         "text": "标签收到了哦",
-        "original": "标签收到了哦.mp3"
+        "original": "标签收到了哦.mp3",
+        "language": "ja",
+        "legacy": true
       },
       {
         "src": "assets/audio/voices/copy_02.mp3",
         "text": "又复制了一次呢，辛苦啦！",
-        "original": "又复制了一次呢，辛苦啦！——陪伴感.mp3"
+        "original": "又复制了一次呢，辛苦啦！——陪伴感.mp3",
+        "language": "ja",
+        "legacy": true
       }
     ],
     "walk": [
       {
         "src": "assets/audio/voices/walk_01.mp3",
         "text": "我去散个步哦。",
-        "original": "我去散个步哦。.mp3"
+        "original": "我去散个步哦。.mp3",
+        "language": "ja",
+        "legacy": true
       }
     ],
     "drag": [
       {
         "src": "assets/audio/voices/drag_01.mp3",
         "text": "你要带我去哪里？",
-        "original": "你要带我去哪里？.mp3"
+        "original": "你要带我去哪里？.mp3",
+        "language": "ja",
+        "legacy": true
       },
       {
         "src": "assets/audio/voices/drag_02.mp3",
         "text": "哇！别突然把我提起来嘛！",
-        "original": "哇！别突然把我提起来嘛！.mp3"
+        "original": "哇！别突然把我提起来嘛！.mp3",
+        "language": "ja",
+        "legacy": true
       }
     ],
     "land": [
       {
         "src": "assets/audio/voices/land_01.mp3",
         "text": "呼，安全着陆！",
-        "original": "呼，安全着陆！.mp3"
+        "original": "呼，安全着陆！.mp3",
+        "language": "ja",
+        "legacy": true
       }
     ],
     "climbTop": [
       {
         "src": "assets/audio/voices/climbTop_01.mp3",
         "text": "爬到顶啦！",
-        "original": "爬到顶啦！.mp3"
+        "original": "爬到顶啦！.mp3",
+        "language": "ja",
+        "legacy": true
       }
     ],
     "idle": [
       {
+        "src": "assets/audio/voices/idle_ja_01.mp3",
+        "text": "别着急，慢慢来就好。",
+        "original": "idle_ja_01.mp3",
+        "language": "ja"
+      },
+      {
+        "src": "assets/audio/voices/idle_ja_02.mp3",
+        "text": "看了这么久，休息一下吧。",
+        "original": "idle_ja_02.mp3",
+        "language": "ja"
+      },
+      {
         "src": "assets/audio/voices/idle_01.mp3",
         "text": "喂，要不要休息一下？",
-        "original": "喂，要不要休息一下？.mp3"
+        "original": "喂，要不要休息一下？.mp3",
+        "language": "ja",
+        "legacy": true
       }
     ],
     "cute": [
       {
         "src": "assets/audio/voices/cute_01.mp3",
         "text": "哇，这个角色好可爱呀",
-        "original": "哇，这个角色好可爱呀.mp3"
+        "original": "哇，这个角色好可爱呀.mp3",
+        "language": "ja",
+        "legacy": true
       }
     ],
     "cool": [
       {
         "src": "assets/audio/voices/cool_01.mp3",
         "text": "哦哦，好帅！",
-        "original": "哦哦，好帅！——赞叹.mp3"
+        "original": "哦哦，好帅！——赞叹.mp3",
+        "language": "ja",
+        "legacy": true
       }
     ],
     "collect": [
       {
         "src": "assets/audio/voices/collect_01.mp3",
         "text": "这个也要保存吗？……真贪心呀。",
-        "original": "这个也要保存吗？……真贪心呀。.mp3"
+        "original": "这个也要保存吗？……真贪心呀。.mp3",
+        "language": "ja",
+        "legacy": true
       }
     ],
     "rapid": [
       {
         "src": "assets/audio/voices/rapid_01.mp3",
         "text": "真是的！不要一直连点啦！",
-        "original": "真是的！不要一直连点啦！——提高音量，但别尖叫.mp3"
+        "original": "真是的！不要一直连点啦！——提高音量，但别尖叫.mp3",
+        "language": "ja",
+        "legacy": true
       }
     ],
     "penis": [
       {
         "src": "assets/audio/voices/penis_01.mp3",
         "text": "哦鲸鲸",
-        "original": "哦鲸鲸.mp3"
+        "original": "哦鲸鲸.mp3",
+        "language": "ja",
+        "legacy": true
       }
     ],
     "h": [
       {
+        "src": "assets/audio/voices/h_ja_01.mp3",
+        "text": "嗯……被我看见了哦。",
+        "original": "h_ja_01.mp3",
+        "language": "ja"
+      },
+      {
+        "src": "assets/audio/voices/h_ja_02.mp3",
+        "text": "你看得也太认真了吧。",
+        "original": "h_ja_02.mp3",
+        "language": "ja"
+      },
+      {
+        "src": "assets/audio/voices/h_ja_8d248714a53a.mp3",
+        "text": "原来如此，原来如此，你真是个大色狼",
+        "original": "ja原来如此，原来如此，你真是个大色狼.mp3",
+        "language": "ja"
+      },
+      {
         "src": "assets/audio/voices/h_01.mp3",
         "text": "……看见了哦。",
-        "original": "……看见了哦。——停顿后轻轻说.mp3"
+        "original": "……看见了哦。——停顿后轻轻说.mp3",
+        "language": "ja",
+        "legacy": true
       },
       {
         "src": "assets/audio/voices/h_02.mp3",
         "text": "不用藏啦，我已经看见了。",
-        "original": "不用藏啦，我已经看见了。.mp3"
+        "original": "不用藏啦，我已经看见了。.mp3",
+        "language": "ja",
+        "legacy": true
       },
       {
         "src": "assets/audio/voices/h_03.mp3",
         "text": "才、才没有……我一点都不好奇。",
-        "original": "才、才没有……我一点都不好奇。.mp3"
+        "original": "才、才没有……我一点都不好奇。.mp3",
+        "language": "ja",
+        "legacy": true
       },
       {
         "src": "assets/audio/voices/h_04.mp3",
         "text": "哼嗯……原来你喜欢这种呀。",
-        "original": "哼嗯……原来你喜欢这种呀。.mp3"
+        "original": "哼嗯……原来你喜欢这种呀。.mp3",
+        "language": "ja",
+        "legacy": true
       },
       {
         "src": "assets/audio/voices/h_05.mp3",
         "text": "看得这么入神……不害羞吗？",
-        "original": "看得这么入神……不害羞吗？.mp3"
+        "original": "看得这么入神……不害羞吗？.mp3",
+        "language": "ja",
+        "legacy": true
       },
       {
         "src": "assets/audio/voices/h_06.mp3",
         "text": "闷骚。",
-        "original": "闷骚。——小声嘀咕、调侃.mp3"
+        "original": "闷骚。——小声嘀咕、调侃.mp3",
+        "language": "ja",
+        "legacy": true
       },
       {
         "src": "assets/audio/voices/h_07.mp3",
         "text": "涩涩！／色鬼！",
-        "original": "涩涩！／色鬼！.mp3"
+        "original": "涩涩！／色鬼！.mp3",
+        "language": "ja",
+        "legacy": true
       },
       {
         "src": "assets/audio/voices/h_08.mp3",
         "text": "涩涩！／色鬼！",
-        "original": "涩涩！／色鬼！(1).mp3"
+        "original": "涩涩！／色鬼！(1).mp3",
+        "language": "ja",
+        "legacy": true
       },
       {
         "src": "assets/audio/voices/h_09.mp3",
         "text": "又在看这种东西啦？",
-        "original": "又在看这种东西啦？.mp3"
+        "original": "又在看这种东西啦？.mp3",
+        "language": "ja",
+        "legacy": true
       },
       {
         "src": "assets/audio/voices/h_10.mp3",
         "text": "这个……可能有点太刺激了。",
-        "original": "这个……可能有点太刺激了。.mp3"
+        "original": "这个……可能有点太刺激了。.mp3",
+        "language": "ja",
+        "legacy": true
       },
       {
         "src": "assets/audio/voices/h_11.mp3",
         "text": "这件事，是我们两个人的秘密哦",
-        "original": "这件事，是我们两个人的秘密哦.mp3"
+        "original": "这件事，是我们两个人的秘密哦.mp3",
+        "language": "ja",
+        "legacy": true
       },
       {
         "src": "assets/audio/voices/h_12.mp3",
         "text": "真是的，你在看什么呀？",
-        "original": "真是的，你在看什么呀？——害羞地吐槽.mp3"
+        "original": "真是的，你在看什么呀？——害羞地吐槽.mp3",
+        "language": "ja",
+        "legacy": true
       },
       {
         "src": "assets/audio/voices/h_13.mp3",
         "text": "真是的……你这个色鬼。",
-        "original": "真是的……你这个色鬼。.mp3"
+        "original": "真是的……你这个色鬼。.mp3",
+        "language": "ja",
+        "legacy": true
       },
       {
         "src": "assets/audio/voices/h_14.mp3",
         "text": "真是的……只限今天哦。",
-        "original": "真是的……只限今天哦。.mp3"
+        "original": "真是的……只限今天哦。.mp3",
+        "language": "ja",
+        "legacy": true
+      },
+      {
+        "src": "assets/audio/voices/shy_ja_e12198b34061.mp3",
+        "text": "被看光了，有点害羞",
+        "original": "被看光了，有点害羞，nude,nake类似裸体提示词触发.mp3",
+        "language": "ja",
+        "tagCondition": "shy"
+      },
+      {
+        "src": "assets/audio/voices/tagInsertion_ja_b74c820416e8.mp3",
+        "text": "不行了，太深了",
+        "original": "不行了，太深了，插入概率触发.mp3",
+        "language": "ja",
+        "tagCondition": "insertion"
+      },
+      {
+        "src": "assets/audio/voices/tagEjaculation_ja_9671e2ebd32a.mp3",
+        "text": "全部吞下去了哦",
+        "original": "全部吞下去了哦，射精场景概率触发.mp3",
+        "language": "ja",
+        "tagCondition": "ejaculation"
+      },
+      {
+        "src": "assets/audio/voices/tagEjaculation_ja_d7a3c7296d32.mp3",
+        "text": "射在里面，你要对我负责哦",
+        "original": "射在里面，你要对我负责哦，射精触发.mp3",
+        "language": "ja",
+        "tagCondition": "ejaculation"
+      }
+    ],
+    "greetingNight": [
+      {
+        "src": "assets/audio/voices/greetingNight_ja_83a76caeee8a.mp3",
+        "text": "你怎么还没睡",
+        "original": "你怎么还没睡-凌晨和深夜开机语音.mp3",
+        "language": "ja"
+      }
+    ],
+    "greetingEvening": [
+      {
+        "src": "assets/audio/voices/greetingEvening_ja_ca3848a2aa9f.mp3",
+        "text": "晚上好",
+        "original": "晚上好-晚上开机语音时间自拟.mp3",
+        "language": "ja"
+      }
+    ],
+    "greetingMorning": [
+      {
+        "src": "assets/audio/voices/greetingMorning_ja_a0b2dcd4b56d.mp3",
+        "text": "早上好",
+        "original": "早上好-早上五点到十一点开机语音.mp3",
+        "language": "ja"
+      }
+    ],
+    "greetingNoon": [
+      {
+        "src": "assets/audio/voices/greetingNoon_ja_612778129c5d.mp3",
+        "text": "中午好",
+        "original": "中午好-中午开机启动语音时间自拟.mp3",
+        "language": "ja"
+      }
+    ],
+    "annoyed": [
+      {
+        "src": "assets/audio/voices/annoyed_ja_01.mp3",
+        "text": "第三次了哦，我可要生气了。",
+        "original": "annoyed_ja_01.mp3",
+        "language": "ja"
+      }
+    ],
+    "filter": [
+      {
+        "src": "assets/audio/voices/filter_ja_01.mp3",
+        "text": "标签整理好了，你再检查一下。",
+        "original": "filter_ja_01.mp3",
+        "language": "ja"
+      }
+    ],
+    "eveningIdle": [
+      {
+        "src": "assets/audio/voices/eveningIdle_ja_5931b9bb42b9.mp3",
+        "text": "今晚月色真美。",
+        "original": "ja今晚月色真美.mp3",
+        "language": "ja"
+      }
+    ],
+    "repeatClick": [
+      {
+        "src": "assets/audio/voices/repeatClick_ja_8e4abf2541f5.mp3",
+        "text": "你一直摸我是想要听我雅蔑蝶，雅蔑蝶的娇嗔吗",
+        "original": "ja你一直摸我是想要听我雅蔑蝶，雅蔑蝶的娇嗔吗-多次点击触发，有内置冷却.mp3",
+        "language": "ja"
+      }
+    ],
+    "touchChestChance": [
+      {
+        "src": "assets/audio/voices/touchChestChance_ja_d8852639b3d4.mp3",
+        "text": "你在摸哪里呢，变态",
+        "original": "ja你在摸哪里呢，变态-触摸胸部概率触发.mp3",
+        "language": "ja"
+      }
+    ],
+    "idleRare": [
+      {
+        "src": "assets/audio/voices/idleRare_ja_2a980ccfcf9f.mp3",
+        "text": "我喜欢你，嗯...开玩笑的",
+        "original": "ja我喜欢你，嗯...开玩笑的-闲置时概率触发.mp3",
+        "language": "ja"
+      },
+      {
+        "src": "assets/audio/voices/idleRare_ja_12f433002374.mp3",
+        "text": "我喜欢你，嗯...开玩笑的",
+        "original": "ja我喜欢你，嗯...开玩笑的-闲置时概率触发(1).mp3",
+        "language": "ja"
+      }
+    ],
+    "sit": [
+      {
+        "src": "assets/audio/voices/sit_ja_01.mp3",
+        "text": "这里不错，我就在这儿陪你。",
+        "original": "sit_ja_01.mp3",
+        "language": "ja"
+      }
+    ],
+    "translate": [
+      {
+        "src": "assets/audio/voices/translate_ja_01.mp3",
+        "text": "翻译好啦，来看看吧。",
+        "original": "translate_ja_01.mp3",
+        "language": "ja"
+      }
+    ],
+    "fall": [
+      {
+        "src": "assets/audio/voices/fall_zh_0603729166a4.mp3",
+        "text": "中国人能飞",
+        "original": "中国人能飞-在落地掉落过程中播放可开关.mp3",
+        "language": "zh"
       }
     ]
   },
   "missing": [],
-  "unused": []
+  "unused": [
+    "zh/巴山楚水凄凉地，这张看的有点腻-标签多次重复概率触发.mp3",
+    "zh/标签整理好了，你再检查一下。filter_zh_01.mp3",
+    "zh/别着急，慢慢来就好。idle_zh_01.mp3",
+    "zh/翻译好啦，来看看吧。translate_zh_01.mp3",
+    "zh/跟着你看了这么久，我要休息一下？idle_zh_02.mp3",
+    "zh/急了巴拉的，我真像锤死你click_zh_02.mp3",
+    "zh/叫老子干啥click_zh_01.mp3",
+    "zh/叫醒①.mp3",
+    "zh/叫醒②.mp3",
+    "zh/叫醒③.mp3",
+    "zh/看了这么久，休息一下吧。idle_zh_02.mp3",
+    "zh/落地①.mp3",
+    "zh/落地②.mp3",
+    "zh/嗯？叫我做什么呀 click_zh_01.mp3",
+    "zh/嗯……被我看见了哦。h_zh_01.mp3",
+    "zh/你很好奇这里吗，摸起来水潺潺的-触摸胸部概率触发.mp3",
+    "zh/你看得也太认真了吧。h_zh_02 .mp3",
+    "zh/你在摸哪里啊，混蛋！-触摸胸部在触发水潺潺之后概率触发.mp3",
+    "zh/爬上窗口.mp3",
+    "zh/收好啦，别弄丢了。copy_zh_01.mp3",
+    "zh/提起①.mp3",
+    "zh/提起②.mp3",
+    "zh/我在这里，慢慢说。click_zh_02.mp3",
+    "zh/闲聊①.mp3",
+    "zh/闲聊②.mp3",
+    "zh/闲聊③.mp3",
+    "zh/有点困了……我小眯一会儿。sleep_zh_01.mp3",
+    "zh/这儿地不错，我就坐这里，你莫挨我sit_zh_01.mp3",
+    "zh/装逼我让你飞起来，啊，敢不敢跟我比划比划，我让你知道什么叫噩梦缠绕，见没见过黑社会啊你-被拖拽时概率触发.mp3",
+    "zh/fuck you,bitch, 少看点黄片-连续阅读三个以上带有黄色标签时触发.mp3"
+  ]
 }

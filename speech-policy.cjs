@@ -5,6 +5,9 @@ const MODES=Object.freeze({
 });
 function normalizeSpeech(value={}){
   return {
+    voiceLanguage:'ja',
+    workbenchSit:false,
+    fallVoiceEnabled:value.fallVoiceEnabled!==false,
     voiceFrequency:Object.hasOwn(MODES,value.voiceFrequency)?value.voiceFrequency:'high',
     voiceCooldownSeconds:Number.isFinite(value.voiceCooldownSeconds)?Math.round(Math.max(1,Math.min(60,value.voiceCooldownSeconds))):5,
     volume:Number.isFinite(value.volume)?Math.round(Math.max(0,Math.min(100,value.volume))):100

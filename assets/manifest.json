@@ -50,6 +50,13 @@
       "walk-right/7.png",
       "walk-right/8.png",
       "walk-right/9.png"
+    ],
+    "sit": [
+      "Sit cross-legged/1.png",
+      "Sit cross-legged/2.png",
+      "Sit cross-legged/3.png",
+      "Sit cross-legged/4.png",
+      "Sit cross-legged/5.png"
     ]
   },
   "audio": {
@@ -57,5 +64,8 @@
   },
   "reactions": {
     "penis": "reactions/oh-jing-jing.png"
+  },
+  "video": {
+    "rage": "video/rage.mp4"
   }
 }
