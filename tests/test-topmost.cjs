@@ -1,0 +1,14 @@
+const assert=require('node:assert/strict');
+const {createTopmostGuard}=require('../topmost.cjs');
+let now=0,visible=true,minimized=false,petAvailable=true,top=true,holding=false;const calls=[];
+const pet={isDestroyed:()=>false,isVisible:()=>visible,isMinimized:()=>minimized,isAlwaysOnTop:()=>top,setAlwaysOnTop:(v,l)=>{top=v;calls.push(['top',v,l]);},moveTop:()=>calls.push(['pet'])};
+const overlay={isDestroyed:()=>false,isVisible:()=>true,isMinimized:()=>false,isAlwaysOnTop:()=>true,moveTop:()=>calls.push(['panel'])};
+const hiddenOverlay={...overlay,isVisible:()=>false,moveTop:()=>{throw Error('Must not lift hidden panel');}};
+const guard=createTopmostGuard({getPet:()=>petAvailable?pet:null,getOverlays:()=>[pet,overlay,hiddenOverlay],isInteracting:()=>holding,now:()=>now});
+guard.refresh();now=1000;guard.refresh();assert.equal(calls.length,0,'Healthy topmost state is never changed periodically');
+guard.request();now=2000;guard.refresh();assert.deepEqual(calls,[['pet'],['panel']],'Foreground change only raises existing topmost window');
+holding=true;top=false;guard.request();now=3000;guard.refresh(true);assert.equal(calls.length,2,'Native capture is untouched while holding');
+holding=false;guard.refresh();assert.deepEqual(calls.slice(2),[['top',true,'screen-saver'],['pet'],['panel']]);
+visible=false;guard.refresh(true);assert.equal(calls.length,5);visible=true;minimized=true;guard.refresh(true);assert.equal(calls.length,5);
+minimized=false;petAvailable=false;guard.refresh(true);assert.equal(calls.length,5);petAvailable=true;guard.refresh(true);assert.equal(calls.length,7);
+console.log(JSON.stringify({noPeriodicNativeMutation:true,foregroundRepair:true,deferredWhileHolding:true,hiddenAndMinimizedRespected:true,ownPanelsStayAbove:true}));

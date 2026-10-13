@@ -64,6 +64,7 @@ function readPairingKey(directory) {
   const key = crypto.randomBytes(32).toString('hex'); fs.mkdirSync(directory, { recursive: true }); fs.writeFileSync(file, JSON.stringify({ key }), { mode: 0o600 }); return key;
 }
 function validateEvent(value) {
+  if(value?.site!==undefined&&!['danbooru','civitai'].includes(value.site))return null;
   if (!value || value.v !== 1 || !['view','copy','leave','panel'].includes(value.kind) ||
       typeof value.clientId !== 'string' || !/^[a-zA-Z0-9-]{8,80}$/.test(value.clientId) ||
       !Number.isSafeInteger(value.seq) || value.seq < 0 ||
@@ -79,7 +80,7 @@ function validateEvent(value) {
     if (p.pointer && ['screenX','screenY','clientX','clientY'].every(k => Number.isFinite(p.pointer[k]) && Math.abs(p.pointer[k]) < 100000))
       panel.pointer = Object.fromEntries(['screenX','screenY','clientX','clientY'].map(k => [k,p.pointer[k]]));
   }
-  return { kind: value.kind, clientId: value.clientId, seq: value.seq, postId: value.postId, eventId: value.eventId, tags: tagList(value.tags), ...(value.kind === 'panel' ? {panel: panel || null} : {}) };
+  return { site:value.site||'danbooru', kind: value.kind, clientId: value.clientId, seq: value.seq, postId: value.postId, eventId: value.eventId, tags: tagList(value.tags), ...(value.kind === 'panel' ? {panel: panel || null} : {}) };
 }
 function matchRule(config, event) {
   const tags = new Set(event.tags);
@@ -88,7 +89,7 @@ function matchRule(config, event) {
   return rules.find(r => r.enabled && r.lines.length && (r.event === 'any' || r.event === event.kind) &&
     !r.exclude.some(t => tags.has(t)) && (r.tags.length ? (r.match === 'all' ? r.tags.every(t => tags.has(t)) : r.tags.some(t => tags.has(t))) : r.event === 'copy')) || null;
 }
-function createReactionEngine({ config = defaults(), now = Date.now, random = Math.random, onReaction = () => {} } = {}) {
+function createReactionEngine({ config = defaults(), now = Date.now, random = Math.random, onReaction = () => {}, onView = () => ({}) } = {}) {
   let options=normalizeConfig(config),lastLine='',lastCopyReceived=-Infinity;
   const lastReaction={view:-Infinity,copy:-Infinity},pending={view:null,copy:null};
   const seen=new Map(),clients=new Map();
@@ -98,7 +99,7 @@ function createReactionEngine({ config = defaults(), now = Date.now, random = Ma
   function deliver(item){
     const choices=item.rule.lines.filter(line=>line!==lastLine),lines=choices.length?choices:item.rule.lines;
     const text=lines[Math.min(lines.length-1,Math.floor(random()*lines.length))];
-    const accepted=onReaction({text,duration:options.bubbleSeconds*1000,rule:item.rule.id,voice:item.event.kind==='copy',kind:item.event.kind});
+    const accepted=onReaction({text,duration:options.bubbleSeconds*1000,rule:item.rule.id,voice:item.event.kind==='copy',kind:item.event.kind,context:item.context,genital:item.event.tags.some(tag=>/^(?:penis|pussy|vulva|vagina|testicles|scrotum|erection|erect_penis|uncensored_penis|clitoris)$/.test(tag))});
     if(accepted===false)return false;
     lastLine=text;lastReaction[item.event.kind]=now();pending[item.event.kind]=null;return true;
   }
@@ -113,13 +114,14 @@ function createReactionEngine({ config = defaults(), now = Date.now, random = Ma
       if(event.kind==='panel')return 'platform';
       if(event.kind==='view'&&pending.view&&(pending.view.event.clientId!==event.clientId||pending.view.event.postId!==event.postId))pending.view=null;
       if(!options.enabled)return 'disabled';
-      const key=event.kind==='view'?'view:'+event.postId:'copy:'+event.eventId;
+      const key=event.kind==='view'?'view:'+(event.site||'danbooru')+':'+event.postId:'copy:'+event.eventId;
       if(seen.has(key))return 'duplicate';remember(key);
       if(state.hidden||state.sleeping)return 'quiet';
+      const context=event.kind==='view'?onView(event):{};
       if(event.kind==='view'&&(pending.copy||now()-lastCopyReceived<options.cooldownSeconds*1000))return 'copy-priority';
       if(event.kind==='copy'&&now()-lastCopyReceived<450)return 'duplicate';
-      if(!ready(event.kind))return 'cooldown';
-      const rule=matchRule(options,event);if(!rule)return 'no-match';
+      if(!ready(event.kind)&&!context.adultStreak&&!context.repeatTags)return 'cooldown';
+      const rule=matchRule(options,event)||(context.repeatTags?{id:'repeatTags',lines:['这些标签好眼熟。'],probability:options.probability}:null);if(!rule)return 'no-match';
       if(random()*100>=(rule.probability??options.probability))return 'chance';
       if(event.kind==='copy'){
         lastCopyReceived=now();pending.view=null;
@@ -127,8 +129,8 @@ function createReactionEngine({ config = defaults(), now = Date.now, random = Ma
         if(pending.copy)return 'coalesced';
       }
       const ttl=event.kind==='copy'?95000:Math.max(5000,Math.min(65000,(state.voiceWaitMs||0)+3500));
-      const item={rule,event,expires:now()+ttl};
-      if(canReact(state)&&deliver(item))return 'reacted';
+      const item={rule,event,context,expires:now()+ttl};
+      if(canReact(state)&&ready(event.kind)&&deliver(item))return 'reacted';
       pending[event.kind]=item;return 'queued';
     },
     tick(state={}){
@@ -152,7 +154,7 @@ function createTagBridge({ key, onEvent, onStatus = () => {}, port = PORT }) {
       server = http.createServer((req, res) => {
         const reply = (code, body) => { res.writeHead(code, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' }); res.end(JSON.stringify(body)); };
         if (req.headers.host !== '127.0.0.1:' + server.address()?.port ||
-            (req.headers.origin && req.headers.origin !== 'https://danbooru.donmai.us')) return reply(403, { error: 'origin' });
+            (req.headers.origin && !['https://danbooru.donmai.us','https://civitai.red'].includes(req.headers.origin))) return reply(403, { error: 'origin' });
         if (req.method !== 'POST' || req.url !== '/v1/event') return reply(404, { error: 'route' });
         const candidate = Buffer.from(String(req.headers.authorization || '').replace(/^Bearer /, ''));
         const expected = Buffer.from(key);

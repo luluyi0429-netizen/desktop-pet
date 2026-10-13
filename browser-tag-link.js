@@ -16,8 +16,8 @@ function createPetLink(panel) {
   const setLabel = text => { label.textContent = text; };
   function send(kind, tags = [], postId = currentPost?.id || 'custom', eventId, extra = {}) {
     if (!pairing || typeof GM_xmlhttpRequest !== 'function') return;
-    const payload = { v:1, kind, tags, postId:String(postId), clientId, seq:++sequence, eventId, ...extra };
-    if (kind !== 'leave' && !foreground()) return;
+    const payload = { v:1, site:location.hostname==="civitai.red"?"civitai":"danbooru", kind, tags, postId:String(postId), clientId, seq:++sequence, eventId, ...extra };
+    if (!['leave','panel'].includes(kind) && !foreground()) return;
     if (kind !== 'leave') inFlight = true;
     const fail = text => { inFlight = false; failures++; nextAttempt = Date.now() + Math.min(30000, 5000 * failures); setLabel(text); };
     try {
@@ -38,9 +38,9 @@ function createPetLink(panel) {
     else { activeSince=0; clearTimeout(copyTimer); send('leave'); }
   }
   function panelGeometry() {
-    if (!foreground() || !pairing || Date.now()<nextAttempt) return;
+    if (!pairing || Date.now()<nextAttempt) return;
     const rect = panel.getBoundingClientRect();
-    const visible = !panel.hidden && rect.width > 0 && rect.height > 0 && getComputedStyle(panel).display !== 'none';
+    const visible = document.visibilityState==='visible' && !panel.hidden && rect.width > 0 && rect.height > 0 && getComputedStyle(panel).display !== 'none';
     if (!visible && !panelSent) return;
     panelSent = visible;
     let sample = null;
@@ -96,7 +96,8 @@ function createPetLink(panel) {
   visibility();
   return {
     postLoaded(post) {
-      const tags=['artist','copyright','character','general','meta'].flatMap(category=>String(post['tag_string_'+category]||'').split(/\s+/)).filter(Boolean);
+      if(!post){currentPost=null;send('leave');return;}
+      const tags=Array.isArray(post.petTags)?post.petTags:['artist','copyright','character','general','meta'].flatMap(category=>String(post['tag_string_'+category]||'').split(/\s+/)).filter(Boolean);
       currentPost={id:String(post.id),tags:[...new Set(tags)].slice(0,512)};visibility();
     },
     copied

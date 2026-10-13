@@ -2,11 +2,11 @@ const assert=require('node:assert/strict');
 const {createBubbleManager}=require('../bubble-window.cjs');
 const windows=[];
 class Window {
-  constructor(){this.events={};this.visible=false;this.destroyed=false;this.shows=0;this.webContents={on:(n,f)=>this.events[n]=f,setWindowOpenHandler(){},send(){}};windows.push(this);}
+  constructor(){this.events={};this.visible=false;this.destroyed=false;this.shows=0;this.hides=0;this.webContents={on:(n,f)=>this.events[n]=f,setWindowOpenHandler(){},send(){}};windows.push(this);}
   isDestroyed(){return this.destroyed;} isVisible(){return this.visible;}
   setAlwaysOnTop(){} setIgnoreMouseEvents(){} setBounds(){}
   loadFile(){return Promise.resolve();}
-  hide(){this.visible=false;}
+  hide(){this.visible=false;this.hides++;}
   showInactive(){assert(!this.destroyed);this.visible=true;this.shows++;}
   destroy(){this.visible=false;this.destroyed=true;}
 }
@@ -20,4 +20,8 @@ const loaded=createBubbleManager({BrowserWindow:Window,screen,directory:__dirnam
 loaded.update(state);const b=windows[1];b.events['did-finish-load']();assert(b.isVisible());
 loaded.destroy();loaded.update(state);b.events['did-finish-load']();
 assert(b.isDestroyed());assert(!b.isVisible());assert.equal(b.shows,1);assert.equal(windows.length,2);
-console.log(JSON.stringify({closeBeforeLoadCannotResurrect:true,closeWhileVisibleRemovesSubtitle:true,lateUpdatesIgnored:true,idempotentDestroy:true}));
+const quiet=createBubbleManager({BrowserWindow:Window,screen,directory:__dirname});quiet.update(state);
+const c=windows[2];c.events['did-finish-load']();quiet.update({...state,audioCue:null});assert.equal(c.hides,1);
+for(let i=0;i<300;i++)quiet.update({...state,audioCue:null});assert.equal(c.hides,1,'Idle behavior must not issue native hide on every frame');
+quiet.destroy();
+console.log(JSON.stringify({closeBeforeLoadCannotResurrect:true,closeWhileVisibleRemovesSubtitle:true,lateUpdatesIgnored:true,idempotentDestroy:true,hideOnlyOncePerCaption:true}));

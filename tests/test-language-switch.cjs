@@ -1,0 +1,20 @@
+// Migration regression for the removed Chinese language option.
+const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
+const {harness}=require('./test-behavior-platforms.cjs');
+const {normalizeSpeech}=require('../speech-policy.cjs');
+const {syncVoiceLibrary,createVoicePicker}=require('../voice-library.cjs');
+assert.equal(normalizeSpeech({voiceLanguage:'zh'}).voiceLanguage,'ja');
+const lib=syncVoiceLibrary(),clips=Object.values(lib.groups).flat();
+assert.equal(clips.length,60);assert.deepEqual(clips.filter(c=>c.language==='zh').map(c=>c.text),['中国人能飞']);
+const pick=createVoicePicker(lib,()=>.5);
+assert.equal(pick('fall').text,'中国人能飞');
+for(const group of Object.keys(lib.groups))if(group!=='fall')assert.equal(pick(group,{language:'zh'}).language,'ja',group);
+const p=harness(.5,true);p.settings('pet:walking',false);
+p.send('pet:drag-start',{x:100,y:100});p.send('pet:drag-end',true);const id=p.state().audioCue.id;
+p.settings('pet:speech-settings',{voiceLanguage:'zh'});assert.equal(p.state().voiceLanguage,'ja');assert.equal(p.state().audioCue.id,id,'Removed language option cannot interrupt playback');
+const seated=harness(.5,true);seated.settings('pet:walking',false);seated.settings('pet:preview','sit');
+const bounds=seated.state().bounds;assert(seated.state().sitFrame<3);
+seated.send('pet:audio-ended',seated.state().audioCue.id);seated.tick(5.1);seated.send('pet:drag-start',{x:100,y:100});seated.send('pet:drag-end',true);
+assert.equal(seated.state().action,'sit');assert.equal(seated.state().audioCue.reason,'click');assert.deepEqual(seated.state().bounds,bounds);
+const ui=fs.readFileSync(path.join(__dirname,'../settings.html'),'utf8');assert(!ui.includes('data-language'));assert(ui.includes('data-action="sit"'));
+console.log(JSON.stringify({oldChineseSettingsUseJapanese:true,onlyFallingChineseRemains:true,noLanguageButtons:true,seatedInteractionPreserved:true}));

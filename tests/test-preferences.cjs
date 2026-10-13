@@ -2,7 +2,7 @@ const assert=require('node:assert/strict');
 const fs=require('node:fs');
 const path=require('node:path');
 const {createPreferences,normalize}=require('../preferences.cjs');
-const speech={voiceFrequency:'high',voiceCooldownSeconds:5,volume:100};
+const speech={voiceFrequency:'high',voiceCooldownSeconds:5,volume:100,voiceLanguage:'ja',workbenchSit:false,fallVoiceEnabled:true};
 const directory=fs.mkdtempSync(path.join(require('node:os').tmpdir(),'pet-prefs-test-'));
 try {
   const store=createPreferences(directory);

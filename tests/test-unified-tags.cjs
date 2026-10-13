@@ -24,7 +24,7 @@ assert.equal(unified.event,'view');assert.equal(unified.probability,83);assert(u
 assert.deepEqual(migrated.rules.filter(r=>other.some(o=>o.id===r.id)),other);assert(fs.existsSync(path.join(dir,'tag-link.json.before-v4')));
 unified.tags=unified.tags.filter(t=>t!=='ass');store.write(migrated);assert(!store.read().rules.find(r=>r.id==='h').tags.includes('ass'),'Migration must run once, preserving subsequent edits');
 const library=JSON.parse(fs.readFileSync(path.join(production,'assets/audio/voices/manifest.json'),'utf8'));
-const picker=createVoicePicker(library,()=>.3),poolCount=library.groups.h.length+library.groups.penis.length;
+const picker=createVoicePicker(library,()=>.3),poolCount=library.groups.h.filter(c=>c.language==='ja').length+library.groups.penis.filter(c=>c.language==='ja').length;
 let previous;for(let round=0;round<3;round++){
  const cycle=Array.from({length:poolCount},()=>picker('h'));assert.equal(new Set(cycle.map(c=>c.src)).size,poolCount);
  assert.equal(cycle.filter(c=>c.image).length,library.groups.penis.length);assert.notEqual(cycle[0].src,previous);previous=cycle.at(-1).src;

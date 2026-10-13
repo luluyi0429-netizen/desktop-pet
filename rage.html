@@ -1,0 +1,7 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; media-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self'">
+<title>视频</title><style>
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#000}video{display:block;width:100%;height:100%;object-fit:contain}
+#close{position:fixed;right:10px;top:10px;width:32px;height:32px;border:0;border-radius:50%;background:#0009;color:white;font:24px/1 sans-serif;cursor:pointer;opacity:0;transition:opacity .15s}body:hover #close,#close:focus-visible{opacity:1}#status{position:fixed;left:5%;right:5%;top:45%;color:white;background:#000b;text-align:center;padding:12px;font:14px sans-serif}#status[hidden]{display:none}
+</style></head><body><video id="video" src="assets/video/rage.mp4" controls playsinline preload="metadata"></video><button id="close" aria-label="关闭视频（Esc）" title="关闭（Esc）">×</button><div id="status" role="status" hidden></div><script src="rage.js"></script></body></html>

@@ -3,6 +3,7 @@ const status = document.querySelector('#status');
 const api = window.desktopPet;
 let timer, lastHeight, lastNoticeId;
 let activePointer = null;
+let pointerEpoch=0;
 let pointerStart, isDragging = false;
 let clickIndex = -1;
 const decodedImages = [];
@@ -41,6 +42,7 @@ function displayFrame() {
   if (!sprites || !currentState) return;
   const frames = sprites.actions[currentState.action] || sprites.actions.idle;
   const index = currentState.action === 'click' ? (currentState.clickFrame || 0) % frames.length
+    : currentState.action === 'sit' ? (currentState.sitFrame || 0) % frames.length
     : currentState.action === 'sleep' ? Math.min(frameIndex, frames.length - 1) : frameIndex % frames.length;
   const frame = frames[index];
   if (pet.src !== frame.image) pet.src = frame.image;
@@ -87,25 +89,48 @@ async function initialize() {
   showStatus('点击互动 · 右键设置');
 }
 if (api) {
+  function clearPointer() {
+    pointerEpoch++;
+    const id=activePointer;activePointer=null;pointerStart=null;isDragging=false;
+    document.body.classList.remove('dragging');
+    if(id!==null&&document.body.hasPointerCapture(id))document.body.releasePointerCapture(id);
+  }
+  function releasePointer(react=true) {
+    if(activePointer===null)return;
+    clearPointer();
+    if(react)api.dragEnd(true);else api.cancelHold();
+  }
+  api.onInputReset(()=>{
+    // An old recovery message must not cancel a subsequent pointerdown.
+    const epoch=pointerEpoch;
+    api.getState().then(state=>{if(epoch===pointerEpoch&&state&&!state.pressed)clearPointer();});
+  });
   api.onState(render);
   initialize().catch(() => showStatus('素材加载失败'));
   pet.addEventListener('pointerdown', event => {
     if (event.button !== 0) return;
     event.preventDefault();
-    activePointer = event.pointerId;
+    if(activePointer!==null){
+      if(event.pointerType==='touch'||event.pointerType==='pen')return;
+      clearPointer();api.dragEnd(false);
+    }
+    const region=window.petHitRegions.hit({action:currentState?.action,frame:Number(pet.dataset.frame)||0,
+      rect:pet.getBoundingClientRect(),x:event.clientX,y:event.clientY,mirrored:pet.style.transform==='scaleX(-1)'});
+    pointerEpoch++;activePointer = event.pointerId;
     pointerStart = { x: event.screenX, y: event.screenY };
     isDragging = false;
     // Capture on a stable parent, not the image whose dimensions change with poses.
-    document.body.setPointerCapture(event.pointerId);
+    try{document.body.setPointerCapture(event.pointerId);}catch{/* Native release monitoring still ends this hold. */}
     if (currentState && sprites && currentState.action!=='laowu') {
       clickIndex = Math.floor(Math.random() * sprites.actions.click.length);
-      render({ ...currentState, action: currentState.falling ? 'drag' : 'click', clickFrame: clickIndex });
+      render({ ...currentState, action: currentState.falling ? 'drag' : currentState.action==='sit'?'sit':'click', clickFrame: clickIndex });
     }
     // Begin holding immediately: movement and gravity pause before the threshold.
-    api.dragStart(pointerStart, clickIndex);
+    api.dragStart(pointerStart, clickIndex,region,event.pointerType);
   });
   window.addEventListener('pointermove', event => {
     if (event.pointerId !== activePointer) return;
+    if(!['touch','pen'].includes(event.pointerType)&&(event.buttons&1)===0){releasePointer(false);return;}
     if (!isDragging && Math.hypot(event.screenX - pointerStart.x, event.screenY - pointerStart.y) >= 5) {
       isDragging = true;
       document.body.classList.add('dragging');
@@ -114,15 +139,13 @@ if (api) {
   });
   function endDrag(event) {
     if (event.pointerId !== activePointer) return;
-    activePointer = null;
-    document.body.classList.remove('dragging');
-    api.dragEnd(event.type === 'pointerup');
-    isDragging = false;
-    if (document.body.hasPointerCapture(event.pointerId)) document.body.releasePointerCapture(event.pointerId);
+    releasePointer(event.type === 'pointerup');
   }
   window.addEventListener('pointerup', endDrag);
   window.addEventListener('pointercancel', endDrag);
-  // Focus loss or capture loss is not a mouse release. Keep the pet stationary.
-  // A later pointerup still ends the hold; cancellation never starts gravity.
-  window.addEventListener('contextmenu', event => { event.preventDefault(); api.openMenu(); });
+  document.body.addEventListener('lostpointercapture',event=>{
+    if(event.pointerId===activePointer)api.cancelHold();
+  });
+  window.addEventListener('blur',()=>{if(activePointer!==null)api.cancelHold();});
+  window.addEventListener('contextmenu', event => { event.preventDefault();releasePointer(false);api.openMenu(); });
 } else { pet.src = 'assets/idle/1站立.png'; showStatus('请通过启动桌宠打开'); }

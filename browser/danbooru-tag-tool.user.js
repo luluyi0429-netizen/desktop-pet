@@ -1,9 +1,10 @@
 // ==UserScript==
 // @name         Danbooru Tag Tool
 // @namespace    local.danbooru-tag-tool
-// @version      3.2.0
+// @version      4.0.0
 // @description  Filter tags, use custom tag tabs, ten copy records and a draggable launcher.
 // @match        https://danbooru.donmai.us/*
+// @match        https://civitai.red/*
 // @grant        GM_setClipboard
 // @grant        GM_xmlhttpRequest
 // @grant        GM_getValue
@@ -14,8 +15,83 @@
 
 (function () {
   'use strict';
+  // PROMPT FILTER BEGIN
+(function(root,factory){if(typeof module==='object'&&module.exports)module.exports=factory();else root.PromptFilter=factory();})(typeof globalThis==='object'?globalThis:this,function(){
+  'use strict';
+  const labels={lora:'LoRA / 模型标记',quality:'质量词',appearance:'角色外貌',tags:'提示词字段',natural:'提示词自然语句'};
+  function category(text){
+    const clean=text.toLowerCase().replace(/_/g,' ').replace(/^[([]+|[)\]]+$/g,'').replace(/:\s*[\d.]+$/,'').trim();
+    if(/^<(?:lora|lyco|hypernet)\b/i.test(text))return 'lora';
+    if(/^(?:newest|year \d{4}|dynamic composition|dynamic angle|dramatic lighting|cinematic lighting|volumetric lighting|rim lighting|depth of field|sharp focus|intricate details|beautiful detailed eyes|vibrant colors|strong color contrast)$/.test(clean))return 'quality';
+    if(/^(?:masterpiece|best quality|high quality|ultra quality|worst quality|low quality|normal quality|very aesthetic|absurdres|highres|lowres|ultra.?detailed|highly detailed|amazing quality|rating[: ]\w+|score[ _]?\d+(?:[ _]up)?|[248]k|[248]k resolution|高清|杰作|最佳质量|高质量|高分辨率|高细节|超精细)(?:\b|$)/i.test(clean)&&clean.split(/\s+/).length<10)return 'quality';
+    if(/[。！？]/.test(text)||/\b(?:is|are|was|wears|wearing|stands|sits|has|holding|looks|gazes|she|he|they|her|his|their|with|while|the)\b/i.test(clean)&&clean.split(/\s+/).length>=7||clean.split(/\s+/).length>=14)return 'natural';
+    if(/\b(?:hair|eyes?|bangs|ponytail|twintails|braids?|eyebrows?|eyelashes|freckles|skin|face|height|body|breasts?|hips|thighs|muscular|slim|petite|tall|short|horns?|ears?|tail|wings|heterochromia|ahoge)\b|发色|头发|眼睛|瞳色|肤色|身材|长发|短发/.test(clean))return 'appearance';
+    return 'tags';
+  }
+  // Commas inside weighted/nested expressions belong to that expression.
+  function split(text){
+    const parts=[];let current='',round=0,square=0,escaped=false;
+    for(const char of String(text||'')){
+      if(escaped){current+=char;escaped=false;continue;}
+      if(char==='\\'){current+=char;escaped=true;continue;}
+      if(char==='(')round++;if(char===')')round=Math.max(0,round-1);
+      if(char==='[')square++;if(char===']')square=Math.max(0,square-1);
+      if((char===','||char==='，'||char==='\n')&&!round&&!square){if(current.trim())parts.push(current.trim());current='';}else current+=char;
+    }
+    if(current.trim())parts.push(current.trim());return parts;
+  }
+  function parse(input){
+    const source=String(input||'').replace(/\r\n?/g,'\n').slice(0,32000);
+    let polarity='positive',serial=0;const items=[];
+    function add(text,kind){if(text.trim())items.push({id:'p'+(++serial),text:text.trim(),category:kind||category(text.trim()),polarity,selected:kind!=='lora'});}
+    for(let line of source.split('\n')){
+      const header=line.match(/^\s*(negative prompt|negative|负面提示词|负向提示词|正向提示词|positive prompt|positive|prompt)(?:\s*[:：]\s*|\s*$)(.*)$/i);
+      if(header){polarity=/negative|负/i.test(header[1])?'negative':'positive';line=header[2];}
+      if(/^\s*(?:Steps|Sampler|CFG scale|Seed|Size|Model hash)\s*:/i.test(line))continue;
+      // Isolate model markup anywhere, preserving text around it.
+      const clean=line.replace(/<(?:lora|lyco|hypernet)\b[^>]*>/gi,token=>{add(token,'lora');return '';});
+      // A complete descriptive paragraph stays intact, including its commas.
+      const natural=category(clean)==='natural'&&/(?:[.!?](?:\s|$)|[。！？])/.test(clean);
+      for(const part of natural?[clean]:split(clean))add(part);
+    }
+    return items;
+  }
+  function output(items,polarity){return items.filter(i=>i.selected&&(polarity?i.polarity===polarity:true)).map(i=>i.text).join(', ');}
+  function sections(items){const positive=output(items,'positive'),negative=output(items,'negative');return negative?'Positive prompt:\n'+positive+'\n\nNegative prompt:\n'+negative:positive;}
+  return {labels,category,split,parse,output,sections};
+});
+
+(function(root,factory){if(typeof module==='object'&&module.exports)module.exports=factory();else root.CivitaiPrompts=factory();})(typeof globalThis==='object'?globalThis:this,function(){
+  'use strict';
+  function textWithoutControls(node){
+    if(node.nodeType===3)return node.textContent;
+    if(node.nodeType!==1)return '';
+    if(node.matches('button,svg,[role="button"]')||/^(?:Show more|Show less|显示更多|收起|\.\.\.)$/i.test(node.textContent.trim()))return '';
+    return [...node.childNodes].map(textWithoutControls).join('');
+  }
+  function read(doc){
+    let positive='',negative='';
+    const headings=[...doc.querySelectorAll('p,h2,h3,h4,label')].filter(e=>!e.closest('#db-tag-tool')&&/^(?:Prompt|Positive prompt|Negative prompt|Negative Prompt|正向提示词|负面提示词)$/i.test(e.textContent.trim())&&e.getClientRects().length);
+    for(const heading of headings){
+      let parent=heading.parentElement,content=null;
+      for(let depth=0;depth<3&&parent;depth++,parent=parent.parentElement){
+        const candidate=parent.querySelector('[data-line-clamp]');
+        if(candidate&&!candidate.contains(heading)){content=candidate;break;}
+        if(parent.children.length===2&&parent.firstElementChild.contains(heading)&&parent.lastElementChild.matches('textarea,pre,[data-prompt],.break-words')){content=parent.lastElementChild;break;}
+      }
+      if(!content)continue;
+      const value=(content.value||textWithoutControls(content)).trim().slice(0,32000);
+      if(/negative|负/i.test(heading.textContent))negative=value;else positive=value;
+    }
+    return {positive,negative};
+  }
+  return {read,textWithoutControls};
+});
+
+  // PROMPT FILTER END
 
   const categoryNames = {
+    lora:'LoRA / 模型标记', quality:'质量词', natural:'提示词自然语句', tags:'提示词字段', appearance:'角色外貌',
     hair:'头发', eyes:'眼睛', face:'脸部', skin:'肤色', body:'体型', species:'身体设定',
     identity:'角色 / 作品 / 人数', clothing:'服装', accessories:'饰品', expression:'表情',
     pose:'姿势 / 动作', artist:'画师', meta:'其他元信息', scene:'场景 / 构图'
@@ -133,8 +209,10 @@
     ['Meta', 'tag_string_meta']
   ];
 
-  const id = location.pathname.match(/\/posts\/(\d+)/)?.[1];
-  if (location.hostname !== 'danbooru.donmai.us') return alert('请在 Danbooru 网站使用。');
+  const isCivitai=location.hostname==='civitai.red';
+  const currentId=()=>location.pathname.match(isCivitai?/\/images\/(\d+)/:/\/posts\/(\d+)/)?.[1];
+  let id=currentId(),polarity='positive',loadSerial=0,lastPromptFingerprint='',awaitFreshPrompt=false;
+  if (!['danbooru.donmai.us','civitai.red'].includes(location.hostname)) return;
   const existing = document.getElementById('db-tag-tool');
   if (existing) { existing.dispatchEvent(new Event('db-open')); return; }
 
@@ -187,7 +265,7 @@
   const panel = document.createElement('section');
   panel.id = 'db-tag-tool';
   panel.innerHTML = `
-    <div class="db-head"><span>标签工作台 <small>v3${id ? " · #" + id : ""}</small></span><button class="db-close" title="收起" aria-label="收起">×</button></div>
+    <div class="db-head"><span>标签工作台 <small>v4${id ? " · #" + id : ""}</small></span><button class="db-close" title="收起" aria-label="收起">×</button></div>
     <div class="db-main-tabs" role="tablist" aria-label="工作台页面"><button role="tab" data-page="filter" aria-selected="true">过滤标签</button><button role="tab" data-page="custom" aria-selected="false">自定义标签</button><button role="tab" data-page="history" aria-selected="false">复制记录</button></div>
     <div class="db-scroll"><div data-pane="filter" role="tabpanel" aria-label="过滤标签">
       <div class="db-config">
@@ -209,6 +287,14 @@
 <div data-pane="history" role="tabpanel" aria-label="复制记录" hidden><div class="db-history-head"><span>最近 10 次成功复制</span><button data-history="clear">清空记录</button></div><div class="db-history"></div></div></div>
 <div class="db-fallback" hidden><label>自动复制失败，可手动复制<textarea readonly aria-label="手动复制文本"></textarea></label><button data-fallback-close>关闭文本</button></div><div class="db-status" role="status">准备就绪</div>`;
   document.body.appendChild(panel);
+  const siteBar=document.createElement('div');siteBar.className='db-actions';
+  for(const [name,url] of [['Civitai','https://civitai.red/'],['Danbooru','https://danbooru.donmai.us/']]){const link=document.createElement('a');link.href=url;link.textContent=name+' ↗';link.target='_blank';link.rel='noopener noreferrer';siteBar.append(link);}
+  panel.querySelector('.db-head').after(siteBar);
+  if(isCivitai){
+    const directions=document.createElement('div');directions.className='db-actions db-polarities';
+    for(const [key,label] of [['positive','正向提示词'],['negative','负面提示词']]){const button=document.createElement('button');button.dataset.polarity=key;button.textContent=label;button.setAttribute('aria-pressed',String(key===polarity));directions.append(button);}siteBar.after(directions);
+    panel.querySelector('[data-setting=scope]').closest('label').hidden=true;
+  }
   const launcher = document.createElement('button');
   launcher.id = 'db-tag-launcher';
   launcher.textContent = '标签';
@@ -242,6 +328,12 @@
     ? groups.filter(([name]) => ['General','Character','Copyright'].includes(name)) : groups.filter(([name]) => name === 'General');
   const present = tag => settings.format === 'spaces' ? tag.replaceAll('_', ' ') : tag;
   function evaluateRows() {
+    if(isCivitai){
+      rows=(post?.promptItems||[]).filter(item=>item.polarity===polarity).map(item=>{
+        const category=item.category,override=settings.overrides[polarity+':'+item.text];
+        return {tag:item.text,group:polarity==='positive'?'正向':'负面',category,source:'提示词分类',override,removed:override==='remove'||(override!=='keep'&&(category==='lora'||settings.filters.includes(category)||(category==='appearance'&&appearance.some(c=>settings.filters.includes(c)))))};
+      });return;
+    }
     rows = scopedGroups().flatMap(([group, key]) => tags(post[key]).map(tag => {
       const info = classify(tag, group);
       const override = Object.hasOwn(settings.overrides, tag) ? settings.overrides[tag] : undefined;
@@ -249,7 +341,7 @@
     }));
   }
   const resultText = () => rows.filter(row => !row.removed).map(row => present(row.tag)).join(', ');
-  const originalText = () => scopedGroups().map(([name,key]) => `${name}: ${tags(post[key]).join(', ')}`).join('\n');
+  const originalText = () => isCivitai?(polarity==='positive'?post.positive:post.negative):scopedGroups().map(([name,key]) => `${name}: ${tags(post[key]).join(', ')}`).join('\n');
 
   function render() {
     const body = panel.querySelector('.db-body');
@@ -272,7 +364,7 @@
       const reason = document.createElement('span'); reason.className = 'db-reason';
       reason.textContent = `${row.group} · ${categoryNames[row.category] || '未识别'} · ${row.override ? (row.removed ? '个人例外：过滤' : '个人例外：保留') : row.source}`;
       text.append(name, reason);
-      const select = document.createElement('select'); select.dataset.override = row.tag;
+      const select = document.createElement('select'); select.dataset.override = (isCivitai?polarity+':':'')+row.tag;
       select.setAttribute('aria-label', `标签 ${row.tag} 的例外规则`);
       for (const [value, label] of [['auto','自动'],['keep','始终保留'],['remove','始终过滤']]) {
         const option = document.createElement('option'); option.value = value; option.textContent = label; select.append(option);
@@ -296,34 +388,35 @@
     saveSettings(); syncPreset(); if (post) render(); setStatus('设置已更新');
   });
 
-  async function load() {
-    post = null;
-    setStatus('正在读取...');
-    panel.querySelector('.db-body').replaceChildren();
-    $('.db-stats').textContent = '';
-    panel.querySelectorAll('[data-action]').forEach(b => { if (b.dataset.action !== 'reset') b.disabled = true; });
-    $('[data-custom="merge"]').disabled = true;
-    if (!id) { setStatus('在单张图片帖子页读取标签；自定义标签与记录随时可用'); $('.db-body').textContent = '打开一张 Danbooru 图片后，即可过滤标签。'; return; }
-    try {
-      const response = await fetch(`/posts/${id}.json`, { credentials: 'same-origin', signal: AbortSignal.timeout(15000) });
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
-      post = await response.json();
-      if (String(post.id) !== id || typeof post.tag_string_general !== 'string') throw new Error('帖子数据无效');
-      render();
-      setStatus('标签已读取');
-      petLink.postLoaded(post);
-      panel.querySelectorAll('[data-action]').forEach(b => { if (b.dataset.action !== 'reset') b.disabled = false; });
-      $('[data-custom="merge"]').disabled = false;
-    } catch (error) {
-      post = null;
-      panel.querySelector('.db-body').replaceChildren();
-      setStatus(`读取失败：${error.message}，请点击刷新重试。`);
-    } finally {
-      panel.querySelector('[data-action="refresh"]').disabled = false;
-    }
+  async function load(manual=false) {
+    const generation=++loadSerial,requestedId=currentId();
+    if(isCivitai&&requestedId!==id)awaitFreshPrompt=Boolean(lastPromptFingerprint);
+    id=requestedId;post=null;rows=[];petLink.postLoaded(null);
+    setStatus('正在读取…');$('.db-body').replaceChildren();$('.db-stats').textContent='';
+    panel.querySelectorAll('[data-action]').forEach(b=>{if(b.dataset.action!=='reset')b.disabled=true;});$('[data-custom=merge]').disabled=true;
+    try{
+      if(!id)throw Error('请打开单张图片详情页；自定义标签和复制记录仍可使用');
+      if(isCivitai){
+        const prompt=CivitaiPrompts.read(document),fingerprint=JSON.stringify(prompt);
+        if(!prompt.positive&&!prompt.negative)throw Error('未找到提示词，请展开 Generation data 后刷新；原图可能未公开参数');
+        if(awaitFreshPrompt&&!manual&&fingerprint===lastPromptFingerprint)throw Error('等待当前图片参数加载，或点击刷新确认');
+        awaitFreshPrompt=false;lastPromptFingerprint=fingerprint;
+        const promptItems=[...PromptFilter.parse(prompt.positive).map(i=>({...i,polarity:'positive'})),...PromptFilter.parse(prompt.negative).map(i=>({...i,polarity:'negative'}))];
+        post={id,...prompt,promptItems,petTags:promptItems.filter(i=>i.polarity==='positive'&&i.category!=='lora').map(i=>i.text.trim().toLowerCase().replace(/\s+/g,'_')).filter(t=>t.length<=128)};
+      }else{
+        const response=await fetch('/posts/'+id+'.json',{credentials:'same-origin',signal:AbortSignal.timeout(15000)});
+        if(!response.ok)throw Error('HTTP '+response.status);const data=await response.json();
+        if(generation!==loadSerial||requestedId!==currentId())return;
+        if(String(data.id)!==id||typeof data.tag_string_general!=='string')throw Error('帖子数据无效');post=data;
+      }
+      render();setStatus(isCivitai?'提示词已读取 · 正向 / 负面独立筛选、复制':'标签已读取');petLink.postLoaded(post);
+      panel.querySelectorAll('[data-action]').forEach(b=>{if(b.dataset.action!=='reset')b.disabled=false;});$('[data-custom=merge]').disabled=false;
+    }catch(error){if(generation!==loadSerial)return;post=null;$('.db-body').replaceChildren();setStatus('读取提示：'+error.message);}
+    finally{if(generation===loadSerial)$('[data-action=refresh]').disabled=false;}
   }
 
   async function copyText(text, mode = '过滤结果', sourceId = id) {
+    if(isCivitai&&!/^(?:正向|负面) · /.test(mode))mode=(polarity==='positive'?'正向 · ':'负面 · ')+mode;
     if (!text.trim()) { setStatus('没有可复制的标签，请先选择标签'); return false; }
     const box = $('.db-fallback'), area = box.querySelector('textarea');
     box.hidden = true;
@@ -351,7 +444,8 @@
     if (button.classList.contains('db-close')) { setOpen(false); return; }
     if (button.dataset.view) { view = button.dataset.view; if (post) render(); return; }
     if (button.dataset.action === 'reset') { settings.overrides = {}; saveSettings(); if (post) render(); setStatus('个人例外已清空'); return; }
-    if (button.dataset.action === 'refresh') return load();
+    if(button.dataset.polarity){polarity=button.dataset.polarity;panel.querySelectorAll('[data-polarity]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.polarity===polarity)));if(post)render();setStatus(polarity==='positive'?'当前操作正向提示词':'当前操作负面提示词');return;}
+    if (button.dataset.action === 'refresh') return load(true);
     if (!post) return;
     if (button.dataset.action === 'copy') return copyText(resultText());
     if (button.dataset.action === 'original') return copyText(originalText(), '原始标签');
@@ -359,7 +453,7 @@
       const blob = new Blob([resultText()], { type: 'text/plain;charset=utf-8' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
-      a.href = url; a.download = `danbooru-${id}-filtered-tags.txt`; panel.appendChild(a); a.click(); a.remove();
+      a.href = url; a.download = (isCivitai?'civitai-':'danbooru-')+id+'-'+(isCivitai?polarity:'tags')+'.txt'; panel.appendChild(a); a.click(); a.remove();
       setTimeout(() => URL.revokeObjectURL(url), 10000);
       setStatus('已发起 TXT 下载');
     }
@@ -568,8 +662,8 @@ function createPetLink(panel) {
   const setLabel = text => { label.textContent = text; };
   function send(kind, tags = [], postId = currentPost?.id || 'custom', eventId, extra = {}) {
     if (!pairing || typeof GM_xmlhttpRequest !== 'function') return;
-    const payload = { v:1, kind, tags, postId:String(postId), clientId, seq:++sequence, eventId, ...extra };
-    if (kind !== 'leave' && !foreground()) return;
+    const payload = { v:1, site:location.hostname==="civitai.red"?"civitai":"danbooru", kind, tags, postId:String(postId), clientId, seq:++sequence, eventId, ...extra };
+    if (!['leave','panel'].includes(kind) && !foreground()) return;
     if (kind !== 'leave') inFlight = true;
     const fail = text => { inFlight = false; failures++; nextAttempt = Date.now() + Math.min(30000, 5000 * failures); setLabel(text); };
     try {
@@ -590,9 +684,9 @@ function createPetLink(panel) {
     else { activeSince=0; clearTimeout(copyTimer); send('leave'); }
   }
   function panelGeometry() {
-    if (!foreground() || !pairing || Date.now()<nextAttempt) return;
+    if (!pairing || Date.now()<nextAttempt) return;
     const rect = panel.getBoundingClientRect();
-    const visible = !panel.hidden && rect.width > 0 && rect.height > 0 && getComputedStyle(panel).display !== 'none';
+    const visible = document.visibilityState==='visible' && !panel.hidden && rect.width > 0 && rect.height > 0 && getComputedStyle(panel).display !== 'none';
     if (!visible && !panelSent) return;
     panelSent = visible;
     let sample = null;
@@ -648,7 +742,8 @@ function createPetLink(panel) {
   visibility();
   return {
     postLoaded(post) {
-      const tags=['artist','copyright','character','general','meta'].flatMap(category=>String(post['tag_string_'+category]||'').split(/\s+/)).filter(Boolean);
+      if(!post){currentPost=null;send('leave');return;}
+      const tags=Array.isArray(post.petTags)?post.petTags:['artist','copyright','character','general','meta'].flatMap(category=>String(post['tag_string_'+category]||'').split(/\s+/)).filter(Boolean);
       currentPost={id:String(post.id),tags:[...new Set(tags)].slice(0,512)};visibility();
     },
     copied
@@ -658,4 +753,10 @@ function createPetLink(panel) {
   const petLink = createPetLink(panel);
   // DESKTOP PET LINK END
   load();
+  let refreshTimer;
+  function changed(){clearTimeout(refreshTimer);refreshTimer=setTimeout(()=>{if(isCivitai){const next=JSON.stringify(CivitaiPrompts.read(document));if(next!==lastPromptFingerprint||!post)load();}},500);}
+  const observer=new MutationObserver(records=>{if(isCivitai&&records.some(r=>!panel.contains(r.target)&&r.target!==launcher))changed();});
+  if(isCivitai)observer.observe(document.body,{subtree:true,childList:true,characterData:true});
+  const navigation=setInterval(()=>{if(currentId()!==id)load();},600);
+  addEventListener('pagehide',()=>{observer.disconnect();clearInterval(navigation);clearTimeout(refreshTimer);},{once:true});
 })();
