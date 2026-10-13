@@ -26,7 +26,7 @@ unified.tags=unified.tags.filter(t=>t!=='ass');store.write(migrated);assert(!sto
 const library=JSON.parse(fs.readFileSync(path.join(production,'assets/audio/voices/manifest.json'),'utf8'));
 const picker=createVoicePicker(library,()=>.3),poolCount=library.groups.h.filter(c=>c.language==='ja').length+library.groups.penis.filter(c=>c.language==='ja').length;
 let previous;for(let round=0;round<3;round++){
- const cycle=Array.from({length:poolCount},()=>picker('h'));assert.equal(new Set(cycle.map(c=>c.src)).size,poolCount);
+ const cycle=Array.from({length:poolCount},()=>picker('h',{context:{shy:true,insertion:true,ejaculation:true}}));assert.equal(new Set(cycle.map(c=>c.src)).size,poolCount);
  assert.equal(cycle.filter(c=>c.image).length,library.groups.penis.length);assert.notEqual(cycle[0].src,previous);previous=cycle.at(-1).src;
 }
 let now=1000,seq=0,output=[];const engine=createReactionEngine({now:()=>now,random:()=>0,onReaction:r=>{output.push(r);return true;}});

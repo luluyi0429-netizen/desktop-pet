@@ -23,7 +23,7 @@ async function run(){
  }
  report.checks.extractedZipHashesMatch=true;
  const profile=path.join(output,'profile');fs.mkdirSync(profile);
- fs.writeFileSync(path.join(profile,'settings.json'),JSON.stringify({height:168,walking:false,muted:true,volume:51,voiceFrequency:'normal',voiceCooldownSeconds:1}));
+ fs.writeFileSync(path.join(profile,'settings.json'),JSON.stringify({height:168,walking:false,muted:true,volume:51,voiceFrequency:'normal',voiceCooldownSeconds:1,voiceLanguage:'zh'}));
  const port=await new Promise(resolve=>{const server=net.createServer();server.listen(0,'127.0.0.1',()=>{const p=server.address().port;server.close(()=>resolve(p));});});
  const env={...process.env};
  for(const key of Object.keys(env))if(['path','node_options','electron_run_as_node'].includes(key.toLowerCase()))delete env[key];
@@ -57,8 +57,8 @@ async function run(){
   const result=await until(async()=>{const state=await send('Runtime.evaluate',{expression:'globalThis.__portableResult',returnByValue:true});if(state.exceptionDetails)throw Error(JSON.stringify(state.exceptionDetails));return state.result.value?.done?state.result.value:null;},20000);
   if(result.error)throw Error(result.error);return result.value;
  }
- await until(()=>evaluate('(()=>{const e=globalThis.__portableTest;return e.app.isReady()&&e.BrowserWindow.getAllWindows().some(w=>w.webContents.getURL().endsWith("/desktop_pet.html"));})()'));
- const get='globalThis.__portableTest.BrowserWindow.getAllWindows().find(w=>w.webContents.getURL().endsWith("/desktop_pet.html"))';
+ await until(()=>evaluate('(()=>{const e=globalThis.__portableTest;return e.app.isReady()&&e.BrowserWindow.getAllWindows().filter(w=>!w.isDestroyed()&&!w.webContents.isDestroyed()).some(w=>w.webContents.getURL().endsWith("/desktop_pet.html"));})()'));
+ const get='globalThis.__portableTest.BrowserWindow.getAllWindows().filter(w=>!w.isDestroyed()&&!w.webContents.isDestroyed()).find(w=>w.webContents.getURL().endsWith("/desktop_pet.html"))';
  await until(()=>evaluate('(()=>{const w='+get+';return w&&!w.webContents.isLoadingMainFrame();})()'));
  const renderer=code=>evaluate(get+'.webContents.executeJavaScript('+JSON.stringify(code)+')');
  await until(()=>renderer('typeof currentState!=="undefined"&&currentState&&typeof sprites!=="undefined"&&sprites&&pet.complete&&pet.naturalWidth>0'));
@@ -74,12 +74,12 @@ async function run(){
  const media=await renderer('(async()=>{const paths='+JSON.stringify(clips)+';for(const src of paths){await new Promise((resolve,reject)=>{const a=new Audio(src);a.volume=0;const t=setTimeout(()=>reject(Error(src+" timeout")),5000);a.onloadedmetadata=()=>{clearTimeout(t);Number.isFinite(a.duration)&&a.duration>0?resolve():reject(Error(src+" duration"));};a.onerror=()=>{clearTimeout(t);reject(Error(src+" decode"));};});}return paths.length;})()');
  assert.equal(media,clips.length);report.checks.audioFilesDecoded=media;
  await renderer('desktopPet.openTagSettings()');
- await until(()=>evaluate('globalThis.__portableTest.BrowserWindow.getAllWindows().some(w=>w.isVisible()&&w.webContents.getURL().endsWith("/tag-settings.html"))'));
+ await until(()=>evaluate('globalThis.__portableTest.BrowserWindow.getAllWindows().filter(w=>!w.isDestroyed()&&!w.webContents.isDestroyed()).some(w=>w.isVisible()&&w.webContents.getURL().endsWith("/tag-settings.html"))'));
  report.checks.tagSettingsOpen=true;
- await evaluate('globalThis.__portableTest.BrowserWindow.getAllWindows().find(w=>w.webContents.getURL().endsWith("/tag-settings.html")).webContents.executeJavaScript("desktopPet.getTagSettings()").then(s=>({ready:s.status.listening}))').then(s=>assert(s.ready));
+ await evaluate('globalThis.__portableTest.BrowserWindow.getAllWindows().filter(w=>!w.isDestroyed()&&!w.webContents.isDestroyed()).find(w=>w.webContents.getURL().endsWith("/tag-settings.html")).webContents.executeJavaScript("desktopPet.getTagSettings()").then(s=>({ready:s.status.listening}))').then(s=>assert(s.ready));
  report.checks.tagServiceListening=true;
  await renderer('desktopPet.openTextAssistant()');
- const textWindow='globalThis.__portableTest.BrowserWindow.getAllWindows().find(w=>w.webContents.getURL().endsWith("/text-assistant.html"))';
+ const textWindow='globalThis.__portableTest.BrowserWindow.getAllWindows().filter(w=>!w.isDestroyed()&&!w.webContents.isDestroyed()).find(w=>w.webContents.getURL().endsWith("/text-assistant.html"))';
  await until(()=>evaluate('(()=>{const w='+textWindow+';return w&&w.isVisible()&&!w.webContents.isLoadingMainFrame();})()'));
  const assistant=await evaluate(textWindow+'.webContents.executeJavaScript("textAssistant.get()")');
  assert.equal(assistant.text,'');assert.equal(assistant.config.endpoint,'');assert.equal(assistant.maxText,8000);
@@ -87,23 +87,46 @@ async function run(){
  const controls=await evaluate(textWindow+'.webContents.executeJavaScript(\'({tasks:document.querySelectorAll("[data-task]").length,save:!!document.getElementById("save"),source:!!document.getElementById("source")})\')');
  assert.equal(controls.tasks,2);assert(controls.save&&controls.source);
  report.checks.translationAndFilterVisible=true;
+ assert.equal(await evaluate(textWindow+'.webContents.executeJavaScript(\'document.querySelectorAll("[data-site],.site-shortcuts").length\')'),0);
+ report.checks.noTextPageWebsiteLinks=true;
  const assistantImage=await evaluate(textWindow+'.webContents.capturePage().then(img=>img.toPNG().toString("base64"))');
  fs.writeFileSync(path.join(output,'text-assistant.png'),Buffer.from(assistantImage,'base64'));
- await evaluate('globalThis.__portableTest.BrowserWindow.getAllWindows().filter(w=>w.webContents.getURL().endsWith("/text-assistant.html")||w.webContents.getURL().endsWith("/tag-settings.html")).forEach(w=>w.close())');
+ await evaluate('globalThis.__portableTest.BrowserWindow.getAllWindows().filter(w=>!w.isDestroyed()&&!w.webContents.isDestroyed()).filter(w=>w.webContents.getURL().endsWith("/text-assistant.html")||w.webContents.getURL().endsWith("/tag-settings.html")).forEach(w=>w.close())');
  await evaluate(get+'.webContents.setAudioMuted(true)');
  await renderer('desktopPet.openMenu()');
- const settingsWindow='globalThis.__portableTest.BrowserWindow.getAllWindows().find(w=>w.webContents.getURL().endsWith("/settings.html"))';
+ const settingsWindow='globalThis.__portableTest.BrowserWindow.getAllWindows().filter(w=>!w.isDestroyed()&&!w.webContents.isDestroyed()).find(w=>w.webContents.getURL().endsWith("/settings.html"))';
  await until(()=>evaluate('(()=>{const w='+settingsWindow+';return w&&w.isVisible()&&!w.webContents.isLoadingMainFrame();})()'));
  assert.equal(await evaluate(settingsWindow+'.webContents.executeJavaScript(\'document.querySelectorAll("[data-language]").length\')'),0);
  await evaluate(settingsWindow+'.webContents.executeJavaScript(\'desktopPet.setMuted(false);desktopPet.setSpeechSettings({voiceFrequency:"high"});desktopPet.closeSettings()\')');
  await until(()=>evaluate('!('+settingsWindow+')'));
  assert.equal((await renderer('desktopPet.getState()')).voiceLanguage,'ja');
- assert.deepEqual(await renderer('sprites.actions.sit.map(f=>f.file)'),['Sit cross-legged/1.png','Sit cross-legged/2.png','Sit cross-legged/3.png']);
+
  await renderer('desktopPet.dragStart({x:100,y:100});desktopPet.dragEnd(true)');
  await until(async()=>Boolean((await renderer('desktopPet.getState()')).audioCue));
  assert(!(await renderer('desktopPet.getState()')).audioCue.src.includes('_zh_'));
  await until(()=>renderer('playingAudio&&playingAudio.element.currentTime>.08'));
- report.checks.packagedJapanesePlaybackAndThreeSitFrames=true;
+ report.checks.packagedJapanesePlaybackAndChineseMigration=true;
+ const menu=code=>evaluate(settingsWindow+'.webContents.executeJavaScript('+JSON.stringify(code)+')');
+ await renderer('desktopPet.openMenu()');
+ await until(()=>evaluate('(()=>{const w='+settingsWindow+';return w&&w.isVisible()&&!w.webContents.isLoadingMainFrame();})()'));
+ const menuView=await menu('({heading:document.getElementById("teleport-title").textContent,sites:Array.from(document.querySelectorAll("[data-site]")).map(b=>b.textContent),languages:document.querySelectorAll("[data-language]").length,arrows:document.body.textContent.includes("↗")})');
+ assert.equal(menuView.heading,'一键传送');assert.deepEqual(menuView.sites,['Civitai','Danbooru']);assert.equal(menuView.languages,0);assert.equal(menuView.arrows,false);report.checks.rightClickWebsitesMoved=true;
+ fs.writeFileSync(path.join(output,'settings.png'),Buffer.from(await evaluate(settingsWindow+'.webContents.capturePage().then(img=>img.toPNG().toString("base64"))'),'base64'));
+ await renderer('desktopPet.audioEnded(currentState.audioCue?.id)');
+ await menu('desktopPet.laowu();desktopPet.closeSettings()');
+ await until(async()=>(await renderer('desktopPet.getState()')).audioCue?.reason==='manual-laowu');
+ assert.equal((await renderer('desktopPet.getState()')).audioCue.text,'');
+ await until(()=>renderer('playingAudio&&playingAudio.element.currentTime>.08'));report.checks.mysteryPlaysWithoutCaption=true;
+ await renderer('desktopPet.openMenu()');await until(()=>evaluate('(()=>{const w='+settingsWindow+';return w&&w.isVisible()&&!w.webContents.isLoadingMainFrame();})()'));
+ await menu('desktopPet.setMuted(true);desktopPet.rage()');
+ const rageWindow='globalThis.__portableTest.BrowserWindow.getAllWindows().filter(w=>!w.isDestroyed()&&!w.webContents.isDestroyed()).find(w=>w.webContents.getURL().endsWith("/rage.html"))';
+ await until(()=>evaluate('(()=>{const w='+rageWindow+';return w&&w.isVisible()&&!w.webContents.isLoadingMainFrame();})()'));
+ const rage=code=>evaluate(rageWindow+'.webContents.executeJavaScript('+JSON.stringify(code)+')');
+ await until(()=>rage('video.currentTime>.08&&!video.paused'));
+ const rageView=await rage('({text:document.body.innerText,title:document.title,width:video.videoWidth,height:video.videoHeight})');assert(!/暴怒|桌宠剧场|桌宠小剧场/.test(rageView.text));assert.equal(rageView.title,'视频');assert(rageView.width>0);report.checks.videoPlaysWithoutHeadings=true;
+ fs.writeFileSync(path.join(output,'video.png'),Buffer.from(await evaluate(rageWindow+'.webContents.capturePage().then(img=>img.toPNG().toString("base64"))'),'base64'));
+ await rage('document.getElementById("close").click()');await until(()=>evaluate('!('+rageWindow+')'));
+ report.checks.videoCloses=true;
  // Disconnect immediately after dispatch so the debugger cannot delay Node exit.
  await evaluate('(()=>{setTimeout(()=>{const w='+get+';if(w)w.close();},150);return true;})()');
  socket.close();socket=null;

@@ -1,4 +1,5 @@
 const api = window.desktopPet;
+document.querySelectorAll('[data-site]').forEach(button=>button.addEventListener('click',()=>api.openSite(button.dataset.site)));
 const slider = document.querySelector('#size');
 const percent = document.querySelector('#percent');
 document.querySelector('#tag-settings').addEventListener('click', () => api.openTagSettings());
@@ -10,7 +11,7 @@ let adjusting = false;
 document.querySelector('#fall-voice').addEventListener('change',event=>api.setSpeechSettings({fallVoiceEnabled:event.target.checked}));
 document.querySelector('#import-voices').addEventListener('click',async event=>{
  event.target.disabled=true;
- try{const result=await api.importVoices();document.querySelector('#voice-import-status').textContent=result.ok?'导入完成：日语 '+result.counts.ja+' 段；跳过 '+result.unused+' 个文件。中文仅保留“中国人能飞”。':result.cancelled?'已取消。':result.error;}
+ try{const result=await api.importVoices();document.querySelector('#voice-import-status').textContent=result.ok?'导入完成：日语 '+result.counts.ja+' 段，保留中文彩蛋 '+result.counts.zh+' 段；跳过 '+result.unused+' 个文件。':result.cancelled?'已取消。':result.error;}
  catch{document.querySelector('#voice-import-status').textContent='导入失败，请重试。';}finally{event.target.disabled=false;}
 });
 const editingVoice = new Set();
@@ -70,5 +71,3 @@ document.querySelector('#stand').addEventListener('click', () => { api.stand(); 
 document.querySelector('#quit').addEventListener('click', () => api.quit());
 document.querySelector('#close').addEventListener('click', () => api.closeSettings());
 window.addEventListener('keydown', event => { if (event.key === 'Escape') api.closeSettings(); });
-
-document.querySelectorAll('[data-site]').forEach(button=>button.addEventListener('click',()=>api.openSite(button.dataset.site)));

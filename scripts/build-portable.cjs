@@ -6,12 +6,15 @@ const runtime=path.join(root,'node_modules','electron','dist');
 const pkg=JSON.parse(fs.readFileSync(path.join(root,'package.json'),'utf8'));
 if(process.platform!=='win32'||process.arch!=='x64')throw Error('Build on Windows x64 with an installed Electron runtime');
 function run(command,args){const r=spawnSync(command,args,{cwd:root,stdio:'inherit',windowsHide:true});if(r.error)throw r.error;if(r.status!==0)throw Error('Build step failed: '+command);}
+run(process.execPath,[path.join(__dirname,'build-tag-link.cjs')]);
 run(process.execPath,[path.join(__dirname,'check-project.cjs')]);
+const {verify}=require('./check-custom2-baseline.cjs');verify(root);
 run(process.execPath,[path.join(__dirname,'run-tests.cjs')]);
 const binary=fs.readFileSync(path.join(runtime,'electron.exe'));
 const pe=binary.readUInt32LE(0x3c);
 assert.equal(binary.toString('ascii',pe,pe+4),'PE\0\0');assert.equal(binary.readUInt16LE(pe+4),0x8664,'Electron must be Windows x64');
 const runtimeVersion=fs.readFileSync(path.join(runtime,'version'),'utf8').trim();
+assert.equal(runtimeVersion,require('./custom2-baseline.json').electron,'Installed Electron differs from verified baseline');
 let name='desktop-pet-'+pkg.version+'-win-x64';
 const release=path.join(root,'release');fs.mkdirSync(release,{recursive:true});
 if(fs.existsSync(path.join(release,name))||fs.existsSync(path.join(release,name+'.zip')))name+='-'+Date.now();
@@ -37,14 +40,16 @@ const code=[
  'selected-text.cjs','selection-capture.cjs','selection-reader.ps1','text-assistant.cjs','text-preload.cjs',
  'text-assistant.html','text-assistant.css','text-assistant.js','voice-lines.cjs','prompt-filter.js',
  'voice-import-map.cjs','conditional-voices.cjs','pet-hit-regions.js',
- 'rage-window.cjs','rage-preload.cjs','rage.html','rage.js','topmost.cjs'
+ 'rage-window.cjs','rage-preload.cjs','rage.html','rage.js'
 ];
 for(const file of code)fs.copyFileSync(path.join(root,file),path.join(appDir,file));
 copyTree(path.join(root,'assets'),path.join(appDir,'assets'));
 fs.writeFileSync(path.join(appDir,'package.json'),JSON.stringify({name:pkg.name,productName:'桌宠',version:pkg.version,private:true,main:'main.cjs',description:pkg.description},null,2)+'\n');
 copyTree(path.join(root,'browser'),path.join(folder,'browser'));
 fs.copyFileSync(path.join(root,'docs','免安装版使用说明.md'),path.join(folder,'使用说明.txt'));
-for(const doc of ['0.3.0更新与使用.md','0.4.0更新与触发条件.md','0.4.1更新与坐姿配音.md','0.4.2点击卡住修复.md','0.4.3中文切换响应修复.md','0.4.4语音与坐姿精简.md','中日配音台词.md'])fs.copyFileSync(path.join(root,'docs',doc),path.join(folder,doc));
+fs.copyFileSync(path.join(root,'docs','custom.2完整说明.md'),path.join(folder,'README.md'));
+fs.copyFileSync(path.join(root,'docs','custom.2源码与验证.md'),path.join(folder,'源码与验证.md'));
+verify(appDir,{browser:path.join(folder,'browser/danbooru-tag-tool.user.js'),strict:true});
 const info={name:'desktop-pet',version:pkg.version,platform:'win32',arch:'x64',electron:runtimeVersion,config:'AppData/Roaming/desktop-pet-prototype',requiresNode:false};
 fs.writeFileSync(path.join(folder,'build-info.json'),JSON.stringify(info,null,2)+'\n');
 const hash=f=>crypto.createHash('sha256').update(fs.readFileSync(f)).digest('hex');

@@ -16,7 +16,14 @@ function isEnabledVoice(group,clip){
   return clip.language!=='zh'||(group==='fall'&&clip.text==='中国人能飞');
 }
 function enabledLibrary(library){
-  return {...library,groups:Object.fromEntries(Object.entries(library.groups||{}).map(([group,clips])=>[group,clips.filter(c=>isEnabledVoice(group,c))]).filter(([,clips])=>clips.length))};
+  const groups=Object.fromEntries(Object.entries(library.groups||{}).map(([group,clips])=>[group,clips.filter(c=>isEnabledVoice(group,c))]).filter(([,clips])=>clips.length));
+  // Migrate old manifests while retaining each clip's existing file and caption.
+  for(const [group,tagCondition] of Object.entries({shy:'shy',tagInsertion:'insertion',tagEjaculation:'ejaculation'})){
+    const additions=(groups[group]||[]).map(clip=>({...clip,tagCondition}));
+    if(additions.length){const existing=groups.h||[];groups.h=[...existing,...additions.filter(c=>!existing.some(old=>old.src===c.src))];}
+    delete groups[group];
+  }
+  return {...library,groups};
 }
 function syncVoiceLibrary(source) {
   const folder = path.join(__dirname, 'assets', 'audio', 'voices');
@@ -51,7 +58,7 @@ function syncVoiceLibrary(source) {
     const target=existing?path.basename(existing.src):exact?path.parse(name).name+ext:line.group+'_'+(line.language||'legacy')+'_'+digest+ext;
     const destination=path.join(folder,target),input=path.join(source,relative);
     if(path.resolve(input)!==path.resolve(destination))fs.copyFileSync(input,destination);
-    const clip={src:'assets/audio/voices/'+target,text:line.text,original:name,...(line.language?{language:line.language}:{}),...(line.legacy?{legacy:true}:{})};
+    const clip={src:'assets/audio/voices/'+target,text:line.text,original:name,...(line.language?{language:line.language}:{}),...(line.legacy?{legacy:true}:{}),...(line.tagCondition?{tagCondition:line.tagCondition}:{})};
     library.groups[line.group]=[...list.filter(c=>c.src!==clip.src),clip];
   }
   for(const group of Object.keys(GROUPS))if(!library.groups[group]?.length)library.missing.push(group);
@@ -60,10 +67,11 @@ function syncVoiceLibrary(source) {
   return library;
 }
 function createVoicePicker(library, random = Math.random) {
+  library=enabledLibrary(library);
   const previous = new Map();
   const bags=new Map();
-  const localized=group=>{const list=(library.groups[group]||[]).filter(c=>isEnabledVoice(group,c));if(group==='fall')return list.filter(c=>c.text==='中国人能飞');const local=list.filter(c=>c.language==='ja');return local.length?local:list.filter(c=>!c.language||c.legacy);};
-  return (group,{genital=false}={}) => {
+  const localized=(group)=>{const list=(library.groups[group]||[]).filter(c=>isEnabledVoice(group,c)); if(group==='fall')return list.filter(c=>c.text==='中国人能飞'); const local=list.filter(c=>c.language==='ja'); return local.length?local:list.filter(c=>!c.language||c.legacy);};
+  return (group,{context={}}={}) => {
     const language='ja';
     const key=group+':'+language;
     if(group==='touchChest'){
@@ -72,18 +80,20 @@ function createVoicePicker(library, random = Math.random) {
       return fixed||(library.groups.click||[]).find(c=>c.src==='assets/audio/voices/click_04.mp3')||null;
     }
     if(group==='h'){
-      const adultPool=[...localized('h',language),...localized('penis',language).map(clip=>({...clip,text:'哦鲸鲸？',image:'assets/reactions/oh-jing-jing.png'}))];
+      const adultPool=[...localized('h',language),...localized('penis',language).map(clip=>({...clip,text:'哦鲸鲸？',image:'assets/reactions/oh-jing-jing.png'}))].filter(clip=>!clip.tagCondition||context?.[clip.tagCondition]===true);
       if(!adultPool.length)return null;
-      let adultBag=bags.get(key)||[];
-      const meme=adultPool.find(c=>c.image);
-      // A modest contextual boost, never two meme clips consecutively.
-      if(genital&&meme&&previous.get(key)!==meme.src&&random()<0.2){previous.set(key,meme.src);bags.set(key,adultBag.filter(c=>c.src!==meme.src));return meme;}
+      // One equal-weight entry per eligible clip. Each tag combination gets a
+      // separate shuffle bag so clips from a previous page cannot leak through.
+      const bagKey=key+':'+JSON.stringify(adultPool.map(c=>c.src).sort());
+      let adultBag=bags.get(bagKey)||[];
       if(!adultBag.length){
         adultBag=[...adultPool];
         for(let i=adultBag.length-1;i>0;i--){const j=Math.min(i,Math.floor(random()*(i+1)));[adultBag[i],adultBag[j]]=[adultBag[j],adultBag[i]];}
+        if(adultBag.length>1&&adultBag[0].src===previous.get(key)){const j=1+Math.min(adultBag.length-2,Math.floor(random()*(adultBag.length-1)));[adultBag[0],adultBag[j]]=[adultBag[j],adultBag[0]];}
       }
-      if(adultBag[0]?.src===previous.get(key)){const index=adultBag.findIndex(c=>c.src!==previous.get(key)); if(index>0)[adultBag[0],adultBag[index]]=[adultBag[index],adultBag[0]]; else if(adultPool.length>1)adultBag=[...adultPool.filter(c=>c.src!==previous.get(key))];}
-      const clip=adultBag.shift();bags.set(key,adultBag);previous.set(key,clip.src);return clip;
+      // On switching pools, defer a consecutive repeat without dropping it.
+      if(adultBag[0]?.src===previous.get(key)&&adultBag.length>1)[adultBag[0],adultBag[1]]=[adultBag[1],adultBag[0]];
+      const clip=adultBag.shift();bags.set(bagKey,adultBag);previous.set(key,clip.src);return clip;
     }
     const list = localized(group,language);
     if (!list.length) return null;
@@ -93,7 +103,7 @@ function createVoicePicker(library, random = Math.random) {
     previous.set(key,clip.src);return clip;
   };
 }
-module.exports = {GROUPS,syncVoiceLibrary,createVoicePicker,isEnabledVoice};
+module.exports = {GROUPS,syncVoiceLibrary,createVoicePicker};
 if (require.main === module) {
   if (!process.argv[2]) { console.error('Usage: node voice-library.cjs <audio-folder>'); process.exitCode = 1; }
   else { try { const library=syncVoiceLibrary(path.resolve(process.argv[2])); console.log(JSON.stringify({clips:Object.values(library.groups).flat().length,missing:library.missing})); }

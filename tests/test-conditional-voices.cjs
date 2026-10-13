@@ -8,11 +8,7 @@ assert.equal(describeVoice('zh/叫老子干啥click_zh_01.mp3',GROUPS).text,'叫
 assert.equal(describeVoice('zh/你看得也太认真了吧。h_zh_02 .mp3',GROUPS).group,'h');
 assert.equal(describeVoice('ja/10.11更新/早上好-早上五点到十一点开机语音.mp3',GROUPS).group,'greetingMorning');
 assert.equal(describeVoice('zh/未标识.mp3',GROUPS),null);
-for(const [name,group] of [['叫醒①','wake'],['落地②','land'],['提起①','drag'],['闲聊③','idle'],['爬上窗口','climbTop']]){
- const clip=describeVoice('zh/'+name+'.mp3',GROUPS);assert.equal(clip.group,group);assert.equal(clip.language,'zh');assert(!clip.text.includes('①'));
-}
-assert.equal(describeVoice('zh/sit_zh_02.wav',GROUPS).group,'sit');
-assert.equal(describeVoice('ja/sit_ja_03.wav',GROUPS).text,'你忙你的，我坐在这里陪你。');
+// Later Chinese filename shortcuts and sitting voice catalog are outside this baseline.
 for(const scale of [.5,1,2]){const rect={left:25,top:10,width:150*scale,height:300*scale};assert.equal(hit({action:'idle',rect,x:25+75*scale,y:10+159*scale}),'chest');assert.equal(hit({action:'idle',rect,x:25+75*scale,y:10+45*scale}),null);assert.equal(hit({action:'sleep',rect,x:25+75*scale,y:10+159*scale}),null);}
 const r={left:0,top:0,width:100,height:100};assert.equal(hit({action:'click',frame:0,rect:r,x:60,y:50,mirrored:true}),'chest');assert.equal(hit({action:'click',frame:0,rect:r,x:60,y:50}),null);
 let now=0;const c=createConditionalVoices({now:()=>now,random:()=>0});

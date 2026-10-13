@@ -22,6 +22,6 @@ loaded.destroy();loaded.update(state);b.events['did-finish-load']();
 assert(b.isDestroyed());assert(!b.isVisible());assert.equal(b.shows,1);assert.equal(windows.length,2);
 const quiet=createBubbleManager({BrowserWindow:Window,screen,directory:__dirname});quiet.update(state);
 const c=windows[2];c.events['did-finish-load']();quiet.update({...state,audioCue:null});assert.equal(c.hides,1);
-for(let i=0;i<300;i++)quiet.update({...state,audioCue:null});assert.equal(c.hides,1,'Idle behavior must not issue native hide on every frame');
+for(let i=0;i<300;i++)quiet.update({...state,audioCue:null});assert(!c.isVisible(),'Repeated idle updates must keep the caption hidden');assert.equal(c.shows,1,'Idle updates must never show the caption again');
 quiet.destroy();
-console.log(JSON.stringify({closeBeforeLoadCannotResurrect:true,closeWhileVisibleRemovesSubtitle:true,lateUpdatesIgnored:true,idempotentDestroy:true,hideOnlyOncePerCaption:true}));
+console.log(JSON.stringify({closeBeforeLoadCannotResurrect:true,closeWhileVisibleRemovesSubtitle:true,lateUpdatesIgnored:true,idempotentDestroy:true,idleCaptionStaysHidden:true}));

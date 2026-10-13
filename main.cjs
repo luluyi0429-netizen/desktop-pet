@@ -21,8 +21,6 @@ const {MODES,normalizeSpeech,createSpeechGate}=require('./speech-policy.cjs');
 const {createTextAssistant}=require('./text-assistant.cjs');
 const {createConditionalVoices,greetingGroup,POLICY}=require('./conditional-voices.cjs');
 const {createRageWindow}=require('./rage-window.cjs');
-const {createTopmostGuard}=require('./topmost.cjs');
-const topmostGuard=createTopmostGuard({getPet:()=>hidden?null:petWindow,getOverlays:()=>BrowserWindow.getAllWindows?.()||[],isInteracting:()=>Boolean(dragStart||settingsWindow||ragePlayer?.active()),now:()=>performance.now()});
 const conditionalVoices=createConditionalVoices({now:()=>performance.now(),random:()=>Math.random()});
 let ragePlayer=null,lastConditionalIdle=0,pendingInteraction=null;
 let textAssistant = null;
@@ -41,14 +39,14 @@ function finishSpecialAudio(id,failed=false) {
 function cancelVoice(){
   if(audioCue){audioCue=null;speechGate.finished(speechSettings);}
 }
-function queueVoice(group,{priority=10,force=false,reason=group,pose=false,genital=false}={}) {
+function queueVoice(group,{priority=10,force=false,reason=group,pose=false,genital=false,context={}}={}) {
   if(ragePlayer?.active())return null;
   const manual=reason==='manual-laowu';
   const important=['sleep','wake','laowu','penis','touchChest','touchChestChance','touchChestAfter','repeatClick','adultStreak','repeatTags','fall','dragRare','idleRare','eveningIdle'].includes(group)||group.startsWith('greeting');
   // Clicking a still-speaking sleeping pet may replace only its bedtime line with the wake response.
   const wakeInterrupt=reason==='sleep-laowu'||reason==='rapid-click'||(reason==='sleep-wake'&&audioCue?.reason==='sleep');
   if(!speechGate.allow(speechSettings,{muted,active:Boolean(audioCue),manual,important,wakeInterrupt}))return null;
-  const clip=group==='laowu'?{src:'assets/audio/laowu.aac',text:''}:pickVoice(group,{language:speechSettings.voiceLanguage,genital});
+  const clip=group==='laowu'?{src:'assets/audio/laowu.aac',text:''}:pickVoice(group,{language:speechSettings.voiceLanguage,genital,context});
   if(!clip)return null;
   conditionalVoices.played(group,speechSettings.voiceLanguage);
   speechGate.started(speechSettings);
@@ -115,16 +113,15 @@ function nativeCopy() {
 let linkWindow, linkStore, tagBridge, tagEngine, pairingKey;
 let linkConfig = linkDefaults(), linkLastSeen = 0;
 function tagState() {
-  return { hidden, sleeping: action === 'sleep', voiceWaitMs:(!muted&&speechSettings.volume>0)?speechGate.remaining():0, busy: Boolean(ragePlayer?.active() || audioCue || dragStart || fallTimer || activeClimb || !docked || !['idle','blink','sit'].includes(action)) };
+  return { hidden, sleeping: action === 'sleep', voiceWaitMs:(!muted&&speechSettings.volume>0)?speechGate.remaining():0, busy: Boolean(ragePlayer?.active() || audioCue || dragStart || fallTimer || activeClimb || !docked || !['idle','blink'].includes(action)) };
 }
 function tagReaction(reaction) {
   if (!petWindow || petWindow.isDestroyed())return false;
   const status=tagState();if(status.hidden||status.sleeping||status.busy||status.voiceWaitMs>0)return false;
   const group=reaction.kind==='copy'||reaction.voice?'copy':({h:'h',body:'h',penis:'h',cute:'cute',sleepy:'sleep',copy:'copy'})[reaction.rule];
-  const context=reaction.context||{};
-  const conditional=reaction.kind==='view'?(conditionalVoices.tag(context)||(group==='h'&&context.shy?'shy':null)):null;
+  const conditional=reaction.kind==='view'?conditionalVoices.tag(reaction.context):null;
   const special=conditional?queueVoice(conditional,{priority:35,reason:'tag-'+conditional}):null;
-  const clip=special||(group?queueVoice(group,{priority:30,reason:'tag-'+group,genital:reaction.genital===true}):null);
+  const clip=special||(group?queueVoice(group,{priority:30,reason:'tag-'+group,genital:reaction.genital===true,context:reaction.context||{}}):null);
   const meme=Boolean(clip?.image);
   const duration=meme?Math.max(5000,reaction.duration):reaction.duration;
   notice={id:++noticeId,kind:'tag',text:clip?.text||reaction.text,duration,expires:Date.now()+duration,
@@ -218,12 +215,13 @@ let petWindow, settingsWindow, sprite, dragStart, fallTimer;
 let behaviorTimer;
 let action = 'idle';
 let actionUntil = 0;
+let sleepUntil = 0;
 let walking = true;
 let nextWalk = performance.now() + randomBetween(BEHAVIOR.restMin, BEHAVIOR.restMax);
 let nextBlink = performance.now() + 2500;
 let movementX = 0;
 let walkDirection = -1;
-let clickFrame = 0, sitFrame = 0, nextSitPose = 0;
+let clickFrame = 0;
 let petHeight = 300;
 let petSize = null;
 let docked = true;
@@ -236,16 +234,14 @@ function movePet(x, y) {
   petWindow.setBounds({ x: Math.round(x), y: Math.round(y), width: size.width, height: size.height });
 }
 function state() {
-  return { action, clickFrame, sitFrame, walking, muted, ...speechSettings, hidden, notice, audioCue, climbing: activeClimb ? { phase: activeClimb.phase, side: activeClimb.side, windowId: activeClimb.windowId } : null, direction: walkDirection, pressed: Boolean(dragStart), falling: Boolean(fallTimer), height: petHeight, docked, support: support ? { id: support.id, edge: support.edge } : null, explorer: explorerMonitor ? explorerMonitor.status() : null, behavior: BEHAVIOR, bounds: petWindow.getBounds(), workArea: display().workArea };
+  return { action, clickFrame, walking, muted, ...speechSettings, hidden, notice, audioCue, climbing: activeClimb ? { phase: activeClimb.phase, side: activeClimb.side, windowId: activeClimb.windowId } : null, direction: walkDirection, pressed: Boolean(dragStart), falling: Boolean(fallTimer), height: petHeight, docked, support: support ? { id: support.id, edge: support.edge } : null, explorer: explorerMonitor ? explorerMonitor.status() : null, behavior: BEHAVIOR, bounds: petWindow.getBounds(), workArea: display().workArea };
 }
 function setAction(next, duration = 0) {
   const previous=action;
-  if(next==='sleep'&&previous!=='sleep')queueVoice('sleep',{priority:50,force:true});
-  if(next==='sit'&&previous!=='sit'){
-    sitFrame=randomClick(sprite.actions.sit.length);
-    nextSitPose=performance.now()+randomBetween(BEHAVIOR.sitPoseMin,BEHAVIOR.sitPoseMax);
-    queueVoice('sit',{priority:10});
-  }
+  if(next==='sleep'&&previous!=='sleep'){
+    sleepUntil=performance.now()+BEHAVIOR.sleepDuration;
+    queueVoice('sleep',{priority:50,force:true});
+  }else if(next!=='sleep')sleepUntil=0;
   action = next;
   actionUntil = duration ? performance.now() + duration : 0;
   if (isMoving(next)) movementX = petWindow.getBounds().x;
@@ -406,13 +402,6 @@ function updateClimb(dt, now) {
 function startBehavior() {
   let last = performance.now();
   behaviorTimer = setInterval(() => {
-    if(dragStart&&dragStart.pointerType==='mouse'&&performance.now()-dragStart.started>350){
-      const pointer=explorerMonitor?.getPointer?.();
-      // Require a fresh native release sample after this hold started. A held
-      // button never times out, including a stationary long press.
-      if(pointer&&!pointer.pressed&&pointer.at>dragStart.nativeStarted+200)endPetHold(true,false);
-    }
-    topmostGuard.refresh();
     if (audioCue && Date.now() >= audioCue.expires) finishSpecialAudio(audioCue.id, true);
     if (tagEngine) tagEngine.tick(tagState());
     if(bubbleManager&&petWindow)bubbleManager.update(state());
@@ -428,16 +417,12 @@ function startBehavior() {
     followSupport();
     if (fallTimer) return;
     if (activeClimb) { updateClimb(dt, now); return; }
+    if(action==='sleep'&&sleepUntil&&now>=sleepUntil){
+      // Natural waking does not advance the annoyed-wake counter.
+      interact();movementUntil=0;setAction('idle');nextBlink=now+2500;return;
+    }
     if (docked && !settingsWindow && !audioCue && action!=='laowu' && now - lastInteraction >= BEHAVIOR.sleepAfter && action !== 'sleep') {
       movementUntil = 0; setAction('sleep'); return;
-    }
-    if(docked&&!settingsWindow&&!audioCue&&['idle','blink'].includes(action)&&sprite.actions.sit?.length&&now-lastInteraction>=BEHAVIOR.sitAfter){
-      movementUntil=0;setAction('sit');
-    }
-    if(action==='sit'&&now>=nextSitPose){
-      const count=sprite.actions.sit.length;
-      if(count>1)sitFrame=(sitFrame+1+randomClick(count-1))%count;
-      nextSitPose=now+randomBetween(BEHAVIOR.sitPoseMin,BEHAVIOR.sitPoseMax);publish();
     }
     if (actionUntil && now >= actionUntil) {
       const previous = action;
@@ -461,8 +446,8 @@ function startBehavior() {
         walkDirection = next.direction;
         setAction(next.direction < 0 ? 'walk-left' : 'walk-right');
       }
-    } else if (['idle','sit'].includes(action) && docked && !settingsWindow) {
-      if (action==='idle' && !audioCue && walking && now >= nextWalk) {
+    } else if (action==='idle' && docked && !settingsWindow) {
+      if (!audioCue && walking && now >= nextWalk) {
         beginMovement();
       } else if (action==='idle'&&now >= nextBlink) setAction('blink', 160);
       if(!audioCue&&now-lastAmbientVoice>=MODES[speechSettings.voiceFrequency].ambientMs){lastAmbientVoice=now;queueVoice('idle',{priority:5});publish();}
@@ -660,13 +645,11 @@ function createWindow() {
   const area = screen.getPrimaryDisplay().workArea;
   petWindow = new BrowserWindow({
     width: 240, height: 324, x: area.x + area.width - 264, y: area.y + area.height - 324,
-    frame: false, transparent: true, resizable: false, movable: true, alwaysOnTop: true, focusable: false,
+    frame: false, transparent: true, resizable: false, movable: true, alwaysOnTop: true,
     skipTaskbar: true, hasShadow: false, backgroundColor: '#00000000', show: false,
-    webPreferences: { preload: path.join(__dirname, 'preload.cjs'), contextIsolation: true, nodeIntegration: false, sandbox: true, backgroundThrottling: false }
+    webPreferences: { preload: path.join(__dirname, 'preload.cjs'), contextIsolation: true, nodeIntegration: false, sandbox: true }
   });
   petWindow.setAlwaysOnTop(true, 'screen-saver');
-  petWindow.on('blur',()=>topmostGuard.request());
-  petWindow.on('restore',()=>topmostGuard.refresh(true));
   petWindow.setMenuBarVisibility(false);
   petWindow.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));
   petWindow.webContents.on('will-navigate', event => event.preventDefault());
@@ -679,7 +662,7 @@ function createWindow() {
     shutdownPet();
     if (!wasQuitting) app.quit();
   });
-  explorerMonitor = createExplorerMonitor(screen, () => {}, nativeCopy,()=>topmostGuard.request());
+  explorerMonitor = createExplorerMonitor(screen, () => {}, nativeCopy);
   explorerMonitor.start();
   textAssistant = createTextAssistant({app,BrowserWindow,screen,ipcMain,globalShortcut,clipboard,safeStorage,shell,
     getOwner:()=>petWindow,
@@ -704,11 +687,11 @@ function createWindow() {
 ipcMain.on('pet:link-open', event => { if (settingsAllowed(event)||allowed(event)) openTagSettings(); });
 ipcMain.on('pet:text-open', event => { if(settingsAllowed(event)||allowed(event))openTextAssistant(); });
 ipcMain.on('pet:site-open',(event,site)=>{
-  if(!settingsAllowed(event))return;
+  if(!settingsAllowed(event)||typeof site!=='string')return;
   const sites={civitai:'https://civitai.red/',danbooru:'https://danbooru.donmai.us/'};
-  if(typeof site!=='string'||!Object.hasOwn(sites,site))return;
+  if(!Object.hasOwn(sites,site))return;
   settingsWindow.close();
-  shell.openExternal(sites[site]).catch(()=>{notice={id:++noticeId,text:'浏览器打开失败，请稍后重试',duration:2500,expires:Date.now()+2500};publish();});
+  shell.openExternal(sites[site]).catch(error=>console.warn('Could not open site:',error.message));
 });
 ipcMain.handle('pet:link-get', event => linkAllowed(event) ? { config: linkConfig, status: linkStatus() } : null);
 ipcMain.handle('pet:link-save', (event, value) => {
@@ -740,7 +723,8 @@ ipcMain.on('pet:click', event => {
   const wasSleeping = action === 'sleep';
   interact();
   if (triggerSpecialClick(wasSleeping)) return;
-  if(action!=='sit'){clickFrame = chooseClick();setAction('click', 450);}else publish();
+  clickFrame = chooseClick();
+  setAction('click', 450);
   postponeWalk();
 });
 ipcMain.on('pet:speech-settings',(event,value)=>{if(settingsAllowed(event))setSpeechSettings(value);});
@@ -762,24 +746,22 @@ ipcMain.on('pet:scale', (event, percent) => {
   if (!settingsAllowed(event) || !Number.isFinite(percent) || dragStart) return;
   setScale(percent);
 });
-ipcMain.on('pet:drag-start', (event, point, reaction, region, pointerType='mouse') => {
-  if (allowed(event)) {
-    pointerType=['touch','pen'].includes(pointerType)?pointerType:'mouse';
-    if(dragStart)endPetHold(false,false,false);
+ipcMain.on('pet:drag-start', (event, point, reaction, region) => {
+  if (allowed(event) && !dragStart) {
     const wasSleeping = action === 'sleep';
     interact();
     const climbingAirborne = stopClimb();
-    const wasFalling = !docked || Boolean(fallTimer) || climbingAirborne;
+    const wasFalling = Boolean(fallTimer) || climbingAirborne;
     stopFall();
     if (settingsWindow) settingsWindow.close();
     postponeWalk();
     const cursor = point && Number.isFinite(point.x) && Number.isFinite(point.y) ? point : screen.getCursorScreenPoint();
-    dragStart = { cursor, bounds: petWindow.getBounds(), moved: false, wasFalling, wasSleeping, region:region==='chest'?'chest':null, started:performance.now(),nativeStarted:Date.now(),pointerType };
+    dragStart = { cursor, bounds: petWindow.getBounds(), moved: false, wasFalling, wasSleeping, region:region==='chest'?'chest':null, started:performance.now() };
     if (wasFalling) setAction('drag');
-    else if (action !== 'laowu' && action !== 'sit') {
+    else if (action !== 'laowu') {
       clickFrame = chooseClick(reaction);
       setAction('click', 450);
-    }else publish();
+    }
   }
 });
 ipcMain.on('pet:drag-move', (event, point) => {
@@ -801,29 +783,19 @@ ipcMain.on('pet:drag-move', (event, point) => {
   const y = Math.round(dragStart.bounds.y + cursor.y - dragStart.cursor.y);
   movePet(x, y);
 });
-function endPetHold(released=true,react=true,resetRenderer=true) {
-  if (!dragStart) return;
+ipcMain.on('pet:drag-end', (event, released = true) => {
+  if (!allowed(event) || !dragStart) return;
   const previous = dragStart;
   dragStart = null;
   interact();
   if (released && (previous.moved || previous.wasFalling)) {specialInteractions.reset();beginFall();}
   else if (!released) {specialInteractions.reset();if(action!=='laowu')setAction('idle');}
-  else if (react&&(previous.wasSleeping || performance.now()-previous.started<=1000)) {
-    if (!triggerSpecialClick(previous.wasSleeping,previous.region) && action!=='laowu') {actionUntil=action==='sit'?0:performance.now()+450;publish();}
-  } else {specialInteractions.reset();if(action!=='laowu'){actionUntil=action==='sit'?0:performance.now()+450;publish();}}
-  if(resetRenderer)petWindow.webContents.send('pet:input-reset');
-}
-ipcMain.on('pet:drag-end', (event, released = true) => {if(allowed(event))endPetHold(released,true,false);});
-ipcMain.on('pet:drag-cancel',event=>{
-  if(!allowed(event)||!dragStart)return;
-  const pointer=explorerMonitor?.getPointer?.();
-  // A sample from before this press cannot prove that its button was released.
-  // Keep the hold until a fresh native sample or a normal pointerup arrives.
-  if(dragStart.pointerType==='mouse'&&pointer&&(pointer.pressed||pointer.at<=dragStart.nativeStarted))return;
-  endPetHold(true,false);
+  else if (previous.wasSleeping || performance.now()-previous.started<=1000) {
+    if (!triggerSpecialClick(previous.wasSleeping,previous.region) && action!=='laowu') {actionUntil=performance.now()+450;publish();}
+  } else {specialInteractions.reset();if(action!=='laowu'){actionUntil=performance.now()+450;publish();}}
 });
 ipcMain.on('pet:preview', (event, next) => {
-  if (!settingsAllowed(event) || dragStart || fallTimer || !['idle', 'sit', 'sleep', 'climb'].includes(next) || !sprite.actions[next]) return;
+  if (!settingsAllowed(event) || dragStart || fallTimer || !['idle', 'sleep', 'climb'].includes(next) || !sprite.actions[next]) return;
   if (next === 'climb' && !docked) return;
   interact();
   if (next === 'climb' && docked) beginClimb(true);

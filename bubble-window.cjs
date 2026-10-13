@@ -26,7 +26,7 @@ function createBubbleManager({BrowserWindow,screen,directory}) {
       if(speaking)payload={id:'voice-'+cue.id,text:cue.text,image:cue.image};
       else if(notice?.image&&notice.expires>Date.now()&&!state.pressed&&!state.falling&&!state.climbing&&state.action!=='sleep')payload={...notice,id:'notice-'+notice.id};
       if (state.hidden || !payload) {
-        latest=null;lastKey=null;if(window && !window.isDestroyed() && window.isVisible())window.hide();return;
+        latest=null;lastKey=null;if(window && !window.isDestroyed())window.hide();return;
       }
       ensureWindow();latest=payload;
       const key=JSON.stringify(payload);

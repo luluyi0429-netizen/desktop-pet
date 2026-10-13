@@ -9,21 +9,16 @@ contextBridge.exposeInMainWorld('desktopPet', {
   setMuted: value => ipcRenderer.send('pet:muted',value),
   laowu: () => ipcRenderer.send('pet:laowu'),
   rage: () => ipcRenderer.send('pet:rage'),
-  openSite: site => ipcRenderer.send('pet:site-open',site),
   setWalking: value => ipcRenderer.send('pet:walking', value),
   setScale: percent => ipcRenderer.send('pet:scale', percent),
-  dragStart: (point, reaction, region, pointerType) => ipcRenderer.send('pet:drag-start', point, reaction, region, pointerType),
+  dragStart: (point, reaction, region) => ipcRenderer.send('pet:drag-start', point, reaction, region),
   dragMove: point => ipcRenderer.send('pet:drag-move', point),
   dragEnd: released => ipcRenderer.send('pet:drag-end', released),
-  cancelHold: () => ipcRenderer.send('pet:drag-cancel'),
-  onInputReset: callback => {
-    const listener=()=>callback();ipcRenderer.on('pet:input-reset',listener);
-    return ()=>ipcRenderer.removeListener('pet:input-reset',listener);
-  },
   preview: action => ipcRenderer.send('pet:preview', action),
   openMenu: () => ipcRenderer.send('pet:menu'),
   openTagSettings: () => ipcRenderer.send('pet:link-open'),
   openTextAssistant: () => ipcRenderer.send('pet:text-open'),
+  openSite: site => ipcRenderer.send('pet:site-open', site),
   getTagSettings: () => ipcRenderer.invoke('pet:link-get'),
   saveTagSettings: value => ipcRenderer.invoke('pet:link-save', value),
   copyTagPairing: () => ipcRenderer.invoke('pet:link-pair'),

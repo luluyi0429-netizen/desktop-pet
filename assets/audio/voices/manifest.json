@@ -332,6 +332,34 @@
         "original": "真是的……只限今天哦。.mp3",
         "language": "ja",
         "legacy": true
+      },
+      {
+        "src": "assets/audio/voices/shy_ja_e12198b34061.mp3",
+        "text": "被看光了，有点害羞",
+        "original": "被看光了，有点害羞，nude,nake类似裸体提示词触发.mp3",
+        "language": "ja",
+        "tagCondition": "shy"
+      },
+      {
+        "src": "assets/audio/voices/tagInsertion_ja_b74c820416e8.mp3",
+        "text": "不行了，太深了",
+        "original": "不行了，太深了，插入概率触发.mp3",
+        "language": "ja",
+        "tagCondition": "insertion"
+      },
+      {
+        "src": "assets/audio/voices/tagEjaculation_ja_9671e2ebd32a.mp3",
+        "text": "全部吞下去了哦",
+        "original": "全部吞下去了哦，射精场景概率触发.mp3",
+        "language": "ja",
+        "tagCondition": "ejaculation"
+      },
+      {
+        "src": "assets/audio/voices/tagEjaculation_ja_d7a3c7296d32.mp3",
+        "text": "射在里面，你要对我负责哦",
+        "original": "射在里面，你要对我负责哦，射精触发.mp3",
+        "language": "ja",
+        "tagCondition": "ejaculation"
       }
     ],
     "greetingNight": [
@@ -443,20 +471,39 @@
         "original": "中国人能飞-在落地掉落过程中播放可开关.mp3",
         "language": "zh"
       }
-    ],
-    "shy": [
-      {
-        "src": "assets/audio/voices/shy_ja_e12198b34061.mp3",
-        "text": "被看光了，有点害羞。",
-        "original": "被看光了，有点害羞，nude,nake类似裸体提示词触发.mp3",
-        "language": "ja"
-      }
     ]
   },
   "missing": [],
   "unused": [
-    "ja/10.13更新/不行了，太深了，插入概率触发.mp3",
-    "ja/10.13更新/全部吞下去了哦，射精场景概率触发.mp3",
-    "ja/10.13更新/射在里面，你要对我负责哦，射精触发.mp3"
+    "zh/巴山楚水凄凉地，这张看的有点腻-标签多次重复概率触发.mp3",
+    "zh/标签整理好了，你再检查一下。filter_zh_01.mp3",
+    "zh/别着急，慢慢来就好。idle_zh_01.mp3",
+    "zh/翻译好啦，来看看吧。translate_zh_01.mp3",
+    "zh/跟着你看了这么久，我要休息一下？idle_zh_02.mp3",
+    "zh/急了巴拉的，我真像锤死你click_zh_02.mp3",
+    "zh/叫老子干啥click_zh_01.mp3",
+    "zh/叫醒①.mp3",
+    "zh/叫醒②.mp3",
+    "zh/叫醒③.mp3",
+    "zh/看了这么久，休息一下吧。idle_zh_02.mp3",
+    "zh/落地①.mp3",
+    "zh/落地②.mp3",
+    "zh/嗯？叫我做什么呀 click_zh_01.mp3",
+    "zh/嗯……被我看见了哦。h_zh_01.mp3",
+    "zh/你很好奇这里吗，摸起来水潺潺的-触摸胸部概率触发.mp3",
+    "zh/你看得也太认真了吧。h_zh_02 .mp3",
+    "zh/你在摸哪里啊，混蛋！-触摸胸部在触发水潺潺之后概率触发.mp3",
+    "zh/爬上窗口.mp3",
+    "zh/收好啦，别弄丢了。copy_zh_01.mp3",
+    "zh/提起①.mp3",
+    "zh/提起②.mp3",
+    "zh/我在这里，慢慢说。click_zh_02.mp3",
+    "zh/闲聊①.mp3",
+    "zh/闲聊②.mp3",
+    "zh/闲聊③.mp3",
+    "zh/有点困了……我小眯一会儿。sleep_zh_01.mp3",
+    "zh/这儿地不错，我就坐这里，你莫挨我sit_zh_01.mp3",
+    "zh/装逼我让你飞起来，啊，敢不敢跟我比划比划，我让你知道什么叫噩梦缠绕，见没见过黑社会啊你-被拖拽时概率触发.mp3",
+    "zh/fuck you,bitch, 少看点黄片-连续阅读三个以上带有黄色标签时触发.mp3"
   ]
 }

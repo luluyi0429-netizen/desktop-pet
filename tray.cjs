@@ -2,7 +2,7 @@ const { Tray, Menu, nativeImage } = require('electron');
 function createPetTray(imageData, controls) {
   const icon = nativeImage.createFromDataURL(imageData).resize({ width: 24, height: 24, quality: 'best' });
   const tray = new Tray(icon);
-  tray.setToolTip('桌宠 v'+require('./package.json').version+' · 右键设置 · 双击找回');
+  tray.setToolTip('桌宠 · 右键设置 · 双击找回');
   tray.on('double-click', () => controls.home());
   let previous;
   return {

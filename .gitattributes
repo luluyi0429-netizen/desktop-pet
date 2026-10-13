@@ -1,4 +1,6 @@
 * text=auto
+* whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+.gitattributes text eol=lf
 *.js text eol=lf
 *.cjs text eol=lf
 *.json text eol=lf
@@ -15,3 +17,57 @@
 *.wav binary
 *.ogg binary
 *.m4a binary
+
+# Preserve custom.2 runtime bytes, including existing mixed line endings.
+# Keep text diffs available while disabling automatic newline conversion.
+/adult-tags.cjs -text diff
+/assets/audio/voices/manifest.json -text diff
+/assets/manifest.json -text diff
+/behavior.cjs -text diff
+/bubble-preload.cjs -text diff
+/bubble-window.cjs -text diff
+/bubble.html -text diff
+/bubble.js -text diff
+/climb-motion.cjs -text diff
+/conditional-voices.cjs -text diff
+/desktop_pet.html -text diff
+/explorer-monitor.cjs -text diff
+/explorer-windows.ps1 -text diff
+/fall-motion.cjs -text diff
+/main.cjs -text diff
+/pet-hit-regions.js -text diff
+/pet.js -text diff
+/platforms.cjs -text diff
+/preferences.cjs -text diff
+/preload.cjs -text diff
+/prompt-filter.js -text diff
+/rage-preload.cjs -text diff
+/rage-window.cjs -text diff
+/rage.html -text diff
+/rage.js -text diff
+/selected-text.cjs -text diff
+/selection-capture.cjs -text diff
+/selection-reader.ps1 -text diff
+/settings.html -text diff
+/settings.js -text diff
+/special-interactions.cjs -text diff
+/speech-policy.cjs -text diff
+/sprites.cjs -text diff
+/sync-materials.cjs -text diff
+/tag-link.cjs -text diff
+/tag-settings.html -text diff
+/tag-settings.js -text diff
+/text-assistant.cjs -text diff
+/text-assistant.css -text diff
+/text-assistant.html -text diff
+/text-assistant.js -text diff
+/text-preload.cjs -text diff
+/tray.cjs -text diff
+/voice-import-map.cjs -text diff
+/voice-library.cjs -text diff
+/voice-lines.cjs -text diff
+/walk-motion.cjs -text diff
+/workbench-platform.cjs -text diff
+/browser/danbooru-tag-tool.user.js -text diff
+/browser-tag-link.js -text diff
+/civitai-prompts.js -text diff

@@ -26,7 +26,6 @@ function createSpeechGate({now=Date.now,random=Math.random}={}){
     },
     started(settings){nextAllowedAt=now()+settings.voiceCooldownSeconds*1000;},
     finished(settings){nextAllowedAt=now()+settings.voiceCooldownSeconds*1000;},
-    reset(){nextAllowedAt=-Infinity;},
     remaining(){return Math.max(0,nextAllowedAt-now());}
   };
 }

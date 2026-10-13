@@ -9,7 +9,7 @@ assert.deepEqual(manifests.map(hash),before,'Startup must not overwrite bundled 
 assert(!images.source&&!voices.source,'No personal import paths in manifests');
 for(const list of Object.values(images.actions))for(const f of list)assert(fs.existsSync(path.join(root,'assets',f)),f);
 for(const list of Object.values(voices.groups))for(const clip of list)assert(fs.existsSync(path.join(root,clip.src)),clip.src);
-assert.equal(Object.values(voices.groups).flat().length,60);
-assert.deepEqual(images.actions.sit,['Sit cross-legged/1.png','Sit cross-legged/2.png','Sit cross-legged/3.png']);
+assert.equal(Object.values(voices.groups).flat().length,63);
+assert.deepEqual(images.actions.sit,['Sit cross-legged/1.png','Sit cross-legged/2.png','Sit cross-legged/3.png','Sit cross-legged/4.png','Sit cross-legged/5.png']);
 assert.deepEqual(Object.values(voices.groups).flat().filter(c=>c.language==='zh').map(c=>c.text),['中国人能飞']);
 console.log(JSON.stringify({bundledImagesExist:true,bundledVoicesExist:true,startupDoesNotRescanOriginals:true,manifestsUnchanged:true}));

@@ -80,7 +80,6 @@ $('clipboard').addEventListener('click', () => call(() => api.clipboard()));
 $('clear').addEventListener('click', () => call(() => api.clear()));
 $('copy').addEventListener('click', async () => { if ((await call(() => api.copy(resultTask==='filter'?PromptFilter.sections(filterItems):undefined)))?.ok) setStatus('结果已复制。'); });
 $('pin').addEventListener('click',async()=>{const result=await call(()=>api.pin($('pin').getAttribute('aria-pressed')!=='true'));if(result?.ok){$('pin').setAttribute('aria-pressed',String(result.pinned));$('pin').textContent=result.pinned?'已置顶':'置顶';}});
-document.querySelectorAll('[data-site]').forEach(button=>button.addEventListener('click',()=>call(()=>api.site(button.dataset.site))));
 for(const polarity of ['positive','negative'])$('copy-'+polarity).addEventListener('click',async()=>{if((await call(()=>api.copy(PromptFilter.output(filterItems,polarity))))?.ok)setStatus((polarity==='positive'?'正向':'负面')+'提示词已复制。');});
 $('add-prompt').addEventListener('submit',event=>{event.preventDefault();const added=PromptFilter.parse($('new-prompt').value);if(!added.length)return;
   if(filterItems.length+added.length>1000){setStatus('最多保留 1000 个字段。',true);return;}

@@ -14,9 +14,6 @@ public class ExplorerFrames {
   [DllImport("user32.dll")] static extern bool EnumChildWindows(IntPtr parent, EnumProc callback, IntPtr data);
   [DllImport("user32.dll")] static extern IntPtr GetForegroundWindow();
   [DllImport("user32.dll")] static extern short GetAsyncKeyState(int key);
-  [DllImport("user32.dll")] static extern int GetSystemMetrics(int index);
-  public static bool PrimaryPressed() { return (GetAsyncKeyState(GetSystemMetrics(23)!=0?0x02:0x01) & 0x8000)!=0; }
-  public static string ForegroundId() { return GetForegroundWindow().ToInt64().ToString(); }
   public static bool CopyPressed() {
     return (GetAsyncKeyState(0x11) & 0x8000)!=0 && (GetAsyncKeyState(0x43) & 0x8000)!=0 &&
       (GetAsyncKeyState(0x12) & 0x8000)==0;
@@ -71,11 +68,6 @@ while ($true) {
   if ($copy -and -not $copyHeld -and -not $Once) { [Console]::WriteLine('{"copy":true}'); [Console]::Out.Flush() }
   $copyHeld = $copy
   if ([DateTime]::UtcNow -ge $nextFrames) {
-    if (-not $Once) {
-      $inputState = @{primaryPressed=[ExplorerFrames]::PrimaryPressed();foreground=[ExplorerFrames]::ForegroundId()}
-      [Console]::WriteLine((ConvertTo-Json -InputObject $inputState -Compress))
-      [Console]::Out.Flush()
-    }
     $frames = @([ExplorerFrames]::Read())
     [Console]::WriteLine((ConvertTo-Json -InputObject $frames -Depth 5 -Compress))
     [Console]::Out.Flush()

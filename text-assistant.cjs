@@ -117,11 +117,7 @@ function createTextAssistant({app, BrowserWindow, screen, ipcMain, globalShortcu
     pinned=value;window.setAlwaysOnTop(pinned,'floating');getOwner()?.setAlwaysOnTop?.(true,'screen-saver');
     return {ok:true,pinned};
   });
-  handle('text:site', async value=>{
-    const sites={civitai:'https://civitai.red/',danbooru:'https://danbooru.donmai.us/'};
-    if(!Object.hasOwn(sites,value)||!shell)throw Error('站点无效。');
-    await shell.openExternal(sites[value]);return {ok:true};
-  });
+
   handle('text:cancel', () => { cancel(); return {ok: true}; });
   handle('text:clear', () => { clear(); return {ok: true}; });
   handle('text:clipboard', readClipboard);

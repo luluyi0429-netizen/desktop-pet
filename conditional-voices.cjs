@@ -34,7 +34,9 @@ function createConditionalVoices({now=Date.now,random=Math.random}={}){
       const signature=tags.join('|');repeat=signature&&signature===lastSignature?repeat+1:1;lastSignature=signature;
       streak=tags.some(t=>adult.has(t))?streak+1:0;
       return {adultStreak:streak>=POLICY.adultStreakCount,repeatTags:repeat>=POLICY.repeatTagsCount,
-        shy:tags.some(tag=>['nude','naked','nake','completely_nude'].includes(tag))};
+        shy:tags.some(t=>['nude','naked','nake','completely_nude'].includes(t)),
+        insertion:tags.some(t=>['penetration','vaginal','anal','insertion','deep_penetration'].includes(t)),
+        ejaculation:tags.some(t=>['cum','ejaculation','cum_in_mouth','cum_in_pussy','cum_in_ass','internal_cum','creampie'].includes(t))};
     },
     tag(context={}){
       if(context.adultStreak&&ready('adultStreak',POLICY.rareCooldownMs))return 'adultStreak';
